@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="so">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>SAHAN DATA | Suuq-geyn & Abaalmarin</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; }
+        body { background: linear-gradient(145deg, #3d9ce0 0%, #73c2f0 100%); min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 2rem 1rem; }
+        .title-section { text-align: center; margin-bottom: 2rem; width: 100%; }
+        .title-section h1 { font-size: 2.5rem; color: white; margin-bottom: 0.5rem; text-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .title-section h2 { font-size: 1rem; color: #ffd966; font-weight: 500; }
+        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; width: 100%; max-width: 800px; margin-bottom: 2rem; }
+        .stat-card { background: white; border-radius: 1rem; padding: 1rem; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .stat-card h3 { color: #f59e0b; font-size: 0.9rem; margin-bottom: 0.3rem; }
+        .stat-card .value { font-size: 2rem; font-weight: bold; color: #1e3c72; }
+        .challenge-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; width: 100%; max-width: 1200px; margin-bottom: 2rem; }
+        .challenge-card { background: white; border-radius: 1.5rem; overflow: hidden; box-shadow: 0 8px 20px rgba(0,0,0,0.05); }
+        .card-header { background: #ffd966; padding: 0.8rem 1.2rem; }
+        .card-header h3 { color: #2c3e66; margin: 0; font-size: 1.2rem; display: flex; align-items: center; gap: 0.5rem; }
+        .card-body { padding: 1rem 1.2rem; }
+        .challenge-list { max-height: 300px; overflow-y: auto; }
+        .challenge-item { display: flex; justify-content: space-between; align-items: center; padding: 0.6rem 0; border-bottom: 1px solid #edf2f7; }
+        .challenge-name { font-weight: 500; color: #1e3c72; }
+        .challenge-count { background: #fff3e0; padding: 0.2rem 0.6rem; border-radius: 1rem; font-size: 0.75rem; font-weight: bold; color: #f59e0b; }
+        .loading { text-align: center; padding: 1rem; color: #718096; }
+        .tabs { display: flex; gap: 1rem; margin: 1rem 0; width: 100%; justify-content: center; flex-wrap: wrap; }
+        .tab-btn { background: rgba(255,255,255,0.2); border: none; border-radius: 2rem; padding: 0.5rem 1.5rem; color: white; cursor: pointer; font-weight: 600; transition: 0.2s; }
+        .tab-btn.active { background: white; color: #1e3c72; }
+        .tab-content { background: white; border-radius: 1.5rem; padding: 1.5rem; width: 100%; max-width: 900px; margin-bottom: 2rem; display: none; }
+        .tab-content.active { display: block; }
+        .footer { margin-top: 2rem; width: 100%; max-width: 1200px; background: #ffd966; border-radius: 1rem; padding: 1.5rem 1.5rem 0.8rem; color: #2c3e66; }
+        .footer-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1.5rem; margin-bottom: 1rem; }
+        .footer-section h4 { font-size: 0.9rem; margin-bottom: 0.5rem; color: #2c3e66; font-weight: 600; }
+        .footer-section ul { list-style: none; padding: 0; }
+        .footer-section li { margin-bottom: 0.3rem; }
+        .footer-section a { font-size: 0.75rem; color: #2c3e66; text-decoration: none; display: inline-block; }
+        .footer-section a:hover { text-decoration: underline; }
+        .footer-contact p { font-size: 0.75rem; margin-bottom: 0.3rem; display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; }
+        .footer-contact i { width: 1.2rem; }
+        .footer-bottom { text-align: center; padding-top: 1rem; font-size: 0.7rem; border-top: 1px solid rgba(44,62,102,0.2); }
+        @media (max-width: 768px) {
+            .title-section h1 { font-size: 2rem; }
+            .stats { grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+            .challenge-grid { grid-template-columns: 1fr; gap: 1rem; }
+            .footer-grid { grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="title-section">
+    <h1>⭐ SAHAN DATA ⭐</h1>
+    <h2>ku soo biir xidigaha suuq-geynta</h2>
+</div>
+
+<!-- Stats via RPC -->
+<div class="stats" id="statsContainer">
+    <div class="stat-card"><h3>Total Users</h3><div class="value" id="totalUsers">-</div></div>
+    <div class="stat-card"><h3>Total Orders</h3><div class="value" id="totalOrders">-</div></div>
+    <div class="stat-card"><h3>Total Districts</h3><div class="value" id="totalDistricts">-</div></div>
+    <div class="stat-card"><h3>Total Groups</h3><div class="value" id="totalGroups">-</div></div>
+    <div class="stat-card"><h3>Total Schools</h3><div class="value" id="totalSchools">-</div></div>
+</div>
+
+<!-- Three challenge cards -->
+<div class="challenge-grid">
+    <div class="challenge-card">
+        <div class="card-header"><h3>🏆 Top 3 Weekly Referrers</h3></div>
+        <div class="card-body"><div id="weeklyReferrersList" class="challenge-list">Loading...</div></div>
+    </div>
+    <div class="challenge-card">
+        <div class="card-header"><h3>🛒 Top 5 Sellers</h3></div>
+        <div class="card-body"><div id="sellersList" class="challenge-list">Loading...</div></div>
+    </div>
+    <div class="challenge-card">
+        <div class="card-header"><h3>📢 Top 5 Promoted</h3></div>
+        <div class="card-body"><div id="promotedList" class="challenge-list">Loading...</div></div>
+    </div>
+</div>
+
+<!-- Tabs -->
+<div class="tabs">
+    <button class="tab-btn active" data-tab="competitionTab">🏆 Competition</button>
+    <button class="tab-btn" data-tab="rewardsTab">🎁 Rewards</button>
+</div>
+
+<!-- Competition Tab -->
+<div id="competitionTab" class="tab-content active">
+    <h2>🏅 Top 5 Districts (by orders)</h2>
+    <div id="topDistrictsList" class="challenge-list">Loading...</div>
+    <h2 style="margin-top:1.5rem;">🏅 Top 5 Groups (by orders)</h2>
+    <div id="topGroupsList" class="challenge-list">Loading...</div>
+    <h2 style="margin-top:1.5rem;">🏫 Top 5 Schools (by orders)</h2>
+    <div id="topSchoolsList" class="challenge-list">Loading...</div>
+</div>
+
+<!-- Rewards Tab -->
+<div id="rewardsTab" class="tab-content">
+    <div style="display:flex; flex-direction:column; gap:1rem;">
+        <div style="background:#fff3e0; border-radius:1rem; padding:1rem;"><span style="font-size:2rem;">🥇</span> <strong>Golden</strong> – 100 bonus points + free data package + certificate</div>
+        <div style="background:#fff3e0; border-radius:1rem; padding:1rem;"><span style="font-size:2rem;">🥈</span> <strong>Silver</strong> – 50 bonus points + free data package</div>
+        <div style="background:#fff3e0; border-radius:1rem; padding:1rem;"><span style="font-size:2rem;">🍽️</span> <strong>Platinum</strong> – 25 bonus points + certificate</div>
+        <p style="margin-top:1rem;">✨ Winners: weekly (most referrals), monthly (most promoted & most seller), annually (top district/group/school).</p>
+    </div>
+</div>
+
+<!-- Footer (as requested) -->
+<div class="footer">
+    <div class="footer-grid">
+        <div class="footer-section"><h4>Account</h4><ul><li><a href="login.html">Login</a></li><li><a href="register.html">Register</a></li><li><a href="edit-profile.html">Edit Profile</a></li><li><a href="withdrawal.html">Withdraw</a></li></ul></div>
+        <div class="footer-section"><h4>Info</h4><ul><li><a href="faq.html">FAQ</a></li><li><a href="terms.html">Terms</a></li><li><a href="privacy.html">Privacy</a></li><li><a href="admin.html">Admin</a></li></ul></div>
+        <div class="footer-section"><h4>Quick Links</h4><ul><li><a href="index.html">Home</a></li><li><a href="dashboard.html">Dashboard</a></li><li><a href="leaderboard.html">Leaderboard</a></li><li><a href="rewards.html">Rewards</a></li></ul></div>
+        <div class="footer-section"><h4>History</h4><ul><li><a href="order-history.html">Order History</a></li><li><a href="withdrawal-history.html">Withdrawal History</a></li><li><a href="referrals.html">Referrals</a></li><li><a href="notifications.html">Notifications</a></li></ul></div>
+        <div class="footer-section"><h4>Contact</h4><div class="footer-contact">
+            <p><i class="fab fa-whatsapp"></i> WhatsApp: +252 61 253 8844</p>
+            <p><i class="fas fa-phone"></i> Tel: +252 61 253 8844 / +252 62 253 8844</p>
+            <p><i class="fas fa-envelope"></i> support@sahandata.com</p>
+        </div></div>
+    </div>
+    <div class="footer-bottom">© 2025 SAHAN DATA — All rights reserved</div>
+</div>
+
+<script>
+    // ======================== SUPABASE SETUP ========================
+    const SUPABASE_URL = 'https://xccbmivhcbukqyplstae.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhjY2JtaXZoY2J1a3F5cGxzdGFlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEzNTcyNTIsImV4cCI6MjA4NjkzMzI1Mn0.lGr3cDItP1-LVJgzd5wW5gp0HsGUonuZj-T9qGL2nF0';   // 🔁 Ku beddel key-gaaga saxda ah (anon public)
+    
+    if (typeof window._supabase === 'undefined') {
+        window._supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    }
+    const sb = window._supabase;
+
+    // Helper to escape HTML
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+
+    // Helper render list inside .challenge-list
+    function renderList(containerId, items, nameKey, countKey) {
+        const container = document.getElementById(containerId);
+        if (!items || items.length === 0) {
+            container.innerHTML = '<div class="loading">No data</div>';
+            return;
+        }
+        container.innerHTML = items.map((item, idx) => `
+            <div class="challenge-item">
+                <span class="challenge-name">${idx+1}. ${escapeHtml(item[nameKey])}</span>
+                <span class="challenge-count">${item[countKey]}</span>
+            </div>
+        `).join('');
+    }
+
+    // 1. Load stats using RPCs (bypass RLS)
+    async function loadStats() {
+        try {
+            const { data: totalUsers } = await sb.rpc('get_total_users');
+            document.getElementById('totalUsers').innerText = totalUsers || 0;
+        } catch(e) { document.getElementById('totalUsers').innerText = '0'; }
+        try {
+            const { data: totalOrders } = await sb.rpc('get_total_orders');
+            document.getElementById('totalOrders').innerText = totalOrders || 0;
+        } catch(e) { document.getElementById('totalOrders').innerText = '0'; }
+        try {
+            const { data: totalDistricts } = await sb.rpc('get_total_districts');
+            document.getElementById('totalDistricts').innerText = totalDistricts || 0;
+        } catch(e) { document.getElementById('totalDistricts').innerText = '0'; }
+        try {
+            const { data: totalGroups } = await sb.rpc('get_total_groups');
+            document.getElementById('totalGroups').innerText = totalGroups || 0;
+        } catch(e) { document.getElementById('totalGroups').innerText = '0'; }
+        try {
+            const { data: totalSchools } = await sb.rpc('get_total_schools');
+            document.getElementById('totalSchools').innerText = totalSchools || 0;
+        } catch(e) { document.getElementById('totalSchools').innerText = '0'; }
+    }
+
+    // 2. Weekly Top Referrers
+    async function loadWeeklyReferrers() {
+        try {
+            const { data, error } = await sb.rpc('get_weekly_top_referrers');
+            if (error) throw error;
+            renderList('weeklyReferrersList', data || [], 'full_name', 'referral_count');
+        } catch (err) {
+            document.getElementById('weeklyReferrersList').innerHTML = '<div class="loading">Error loading referrers</div>';
+        }
+    }
+
+    // 3. Top Sellers
+    async function loadTopSellers() {
+        try {
+            const { data, error } = await sb.rpc('get_top_sellers');
+            if (error) throw error;
+            renderList('sellersList', data || [], 'full_name', 'order_count');
+        } catch (err) {
+            document.getElementById('sellersList').innerHTML = '<div class="loading">Error loading sellers</div>';
+        }
+    }
+
+    // 4. Top Promoted
+    async function loadTopPromoted() {
+        try {
+            const { data, error } = await sb.rpc('get_top_promoted');
+            if (error) throw error;
+            renderList('promotedList', data || [], 'full_name', 'usage_count');
+        } catch (err) {
+            document.getElementById('promotedList').innerHTML = '<div class="loading">Error loading promoted</div>';
+        }
+    }
+
+    // 5. Top Districts
+    async function loadTopDistricts() {
+        try {
+            const { data, error } = await sb.rpc('get_top_districts');
+            if (error) throw error;
+            renderList('topDistrictsList', data || [], 'district_name', 'order_count');
+        } catch (err) {
+            document.getElementById('topDistrictsList').innerHTML = '<div class="loading">Error loading districts</div>';
+        }
+    }
+
+    // 6. Top Groups
+    async function loadTopGroups() {
+        try {
+            const { data, error } = await sb.rpc('get_top_groups');
+            if (error) throw error;
+            renderList('topGroupsList', data || [], 'group_code', 'order_count');
+        } catch (err) {
+            document.getElementById('topGroupsList').innerHTML = '<div class="loading">Error loading groups</div>';
+        }
+    }
+
+    // 7. Top Schools
+    async function loadTopSchools() {
+        try {
+            const { data, error } = await sb.rpc('get_top_schools');
+            if (error) throw error;
+            renderList('topSchoolsList', data || [], 'school_name', 'order_count');
+        } catch (err) {
+            document.getElementById('topSchoolsList').innerHTML = '<div class="loading">Error loading schools</div>';
+        }
+    }
+
+    // Tabs functionality
+    function initTabs() {
+        const btns = document.querySelectorAll('.tab-btn');
+        const contents = document.querySelectorAll('.tab-content');
+        btns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const tabId = btn.getAttribute('data-tab');
+                btns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                contents.forEach(c => c.classList.remove('active'));
+                document.getElementById(tabId).classList.add('active');
+            });
+        });
+    }
+
+    // Load all data
+    loadStats();
+    loadWeeklyReferrers();
+    loadTopSellers();
+    loadTopPromoted();
+    loadTopDistricts();
+    loadTopGroups();
+    loadTopSchools();
+    initTabs();
+</script>
+</body>
+</html>

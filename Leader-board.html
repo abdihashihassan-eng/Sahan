@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="so">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>SAHAN DATA - Leaderboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; }
+        body { background: linear-gradient(145deg, #3d9ce0 0%, #73c2f0 100%); min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 2rem 1rem; }
+        .title-section { text-align: center; margin-bottom: 2rem; width: 100%; }
+        .title-section h1 { font-size: 2.5rem; color: white; margin-bottom: 0.5rem; text-shadow: 0 2px 4px rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: center; gap: 1rem; }
+        .title-section h2 { font-size: 1rem; color: #ffd966; font-weight: 500; }
+        .leaderboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 1.5rem; width: 100%; max-width: 1400px; margin-bottom: 2rem; }
+        .leader-card { background: white; border-radius: 1.5rem; overflow: hidden; box-shadow: 0 8px 20px rgba(0,0,0,0.05); }
+        .card-header { background: #ffd966; padding: 0.8rem 1.2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; }
+        .card-header h3 { margin: 0; font-size: 1.2rem; display: flex; align-items: center; gap: 0.5rem; color: #2c3e66; }
+        .time-filter { background: white; border-radius: 2rem; padding: 0.3rem 0.8rem; border: none; font-size: 0.7rem; cursor: pointer; font-weight: bold; color: #1e3c72; }
+        .card-body { padding: 1rem 1.2rem; max-height: 450px; overflow-y: auto; }
+        .rank-item { display: flex; justify-content: space-between; align-items: center; padding: 0.7rem 0; border-bottom: 1px solid #edf2f7; cursor: pointer; transition: background 0.2s; }
+        .rank-item:hover { background: #f0f4f9; }
+        .rank-name { font-weight: 500; color: #1e3c72; flex: 1; }
+        .rank-value { background: #fff3e0; padding: 0.2rem 0.6rem; border-radius: 1rem; font-size: 0.75rem; font-weight: bold; color: #f59e0b; }
+        .medal { font-size: 1.2rem; margin-right: 0.3rem; }
+        .loading { text-align: center; padding: 1rem; color: #718096; }
+        /* Modal */
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); justify-content: center; align-items: center; }
+        .modal-content { background: white; border-radius: 1.5rem; max-width: 500px; width: 90%; padding: 1.5rem; position: relative; max-height: 80vh; overflow-y: auto; }
+        .close { position: absolute; top: 1rem; right: 1.5rem; font-size: 1.5rem; cursor: pointer; }
+        .rank-stat { display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid #eee; }
+        /* Footer: left & right columns */
+        .footer { margin-top: 2rem; width: 100%; max-width: 1200px; background: #ffd966; border-radius: 1rem; padding: 1.5rem 1.5rem 0.8rem; color: #2c3e66; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 2rem; }
+        .footer-left, .footer-right { flex: 1; min-width: 200px; }
+        .footer-left h4, .footer-right h4 { font-size: 0.9rem; margin-bottom: 0.5rem; color: #2c3e66; font-weight: 600; }
+        .footer-left ul, .footer-right ul { list-style: none; padding: 0; }
+        .footer-left li, .footer-right li { margin-bottom: 0.3rem; }
+        .footer-left a, .footer-right a { font-size: 0.75rem; color: #2c3e66; text-decoration: none; display: inline-block; }
+        .footer-left a:hover, .footer-right a:hover { text-decoration: underline; }
+        .footer-contact p { font-size: 0.75rem; margin-bottom: 0.3rem; display: flex; align-items: center; gap: 0.4rem; }
+        .footer-bottom { text-align: center; padding-top: 1rem; font-size: 0.7rem; border-top: 1px solid rgba(44,62,102,0.2); margin-top: 1rem; width: 100%; }
+        @media (max-width: 768px) {
+            .title-section h1 { font-size: 2rem; }
+            .leaderboard-grid { grid-template-columns: 1fr; gap: 1rem; }
+            .footer { flex-direction: column; gap: 1rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="title-section">
+    <h1><span class="trophy">🏆</span> SAHAN DATA <span class="trophy">🏆</span></h1>
+    <h2>Top Rankings & Leaderboard</h2>
+</div>
+
+<!-- Leaderboard Cards with individual filters -->
+<div class="leaderboard-grid">
+    <!-- Referrals Card -->
+    <div class="leader-card">
+        <div class="card-header">
+            <h3><i class="fas fa-trophy"></i> Top Referrals</h3>
+            <select id="refTime" class="time-filter">
+                <option value="week">This Week</option>
+                <option value="month">This Month</option>
+                <option value="year">This Year</option>
+                <option value="all">All Time</option>
+            </select>
+        </div>
+        <div class="card-body" id="referralsList">Loading...</div>
+    </div>
+    <!-- Sellers Card -->
+    <div class="leader-card">
+        <div class="card-header">
+            <h3><i class="fas fa-chart-line"></i> Top Sellers</h3>
+            <select id="sellTime" class="time-filter">
+                <option value="week">This Week</option>
+                <option value="month">This Month</option>
+                <option value="year">This Year</option>
+                <option value="all">All Time</option>
+            </select>
+        </div>
+        <div class="card-body" id="sellersList">Loading...</div>
+    </div>
+    <!-- Promoted Card -->
+    <div class="leader-card">
+        <div class="card-header">
+            <h3><i class="fas fa-star"></i> Top Promoted</h3>
+            <select id="promTime" class="time-filter">
+                <option value="week">This Week</option>
+                <option value="month">This Month</option>
+                <option value="year">This Year</option>
+                <option value="all">All Time</option>
+            </select>
+        </div>
+        <div class="card-body" id="promotedList">Loading...</div>
+    </div>
+</div>
+
+<!-- Extra categories (Districts, Groups, Schools) using RPC -->
+<div class="leaderboard-grid">
+    <div class="leader-card">
+        <div class="card-header"><h3><i class="fas fa-city"></i> Top Districts</h3></div>
+        <div class="card-body" id="districtsList">Loading...</div>
+    </div>
+    <div class="leader-card">
+        <div class="card-header"><h3><i class="fas fa-users"></i> Top Groups</h3></div>
+        <div class="card-body" id="groupsList">Loading...</div>
+    </div>
+    <div class="leader-card">
+        <div class="card-header"><h3><i class="fas fa-school"></i> Top Schools</h3></div>
+        <div class="card-body" id="schoolsList">Loading...</div>
+    </div>
+</div>
+
+<!-- Modal for user details -->
+<div id="userModal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h3 id="modalUserName"></h3>
+        <div id="modalRanks"></div>
+    </div>
+</div>
+
+<!-- Footer: left and right columns -->
+<div class="footer">
+    <div class="footer-left">
+        <h4>Account</h4>
+        <ul><li><a href="login.html">Login</a></li><li><a href="register.html">Register</a></li><li><a href="edit-profile.html">Edit Profile</a></li></ul>
+        <h4 style="margin-top:0.8rem;">Info</h4>
+        <ul><li><a href="faq.html">FAQ</a></li><li><a href="terms.html">Terms</a></li><li><a href="privacy.html">Privacy</a></li><li><a href="admin.html">Admin</a></li></ul>
+    </div>
+    <div class="footer-right">
+        <h4>Quick Links</h4>
+        <ul><li><a href="index.html">Home</a></li><li><a href="dashboard.html">Dashboard</a></li><li><a href="leaderboard.html">Leaderboard</a></li><li><a href="rewards.html">Rewards</a></li></ul>
+        <h4 style="margin-top:0.8rem;">History</h4>
+        <ul><li><a href="order-history.html">Order History</a></li><li><a href="referrals.html">Referrals</a></li><li><a href="notifications.html">Notifications</a></li></ul>
+        <h4 style="margin-top:0.8rem;">Contact</h4>
+        <div class="footer-contact"><p><i class="fab fa-whatsapp"></i> +252 61 253 8844</p><p><i class="fas fa-phone"></i> +252 61 253 8844</p><p><i class="fas fa-envelope"></i> support@sahandata.com</p></div>
+    </div>
+</div>
+<div class="footer-bottom"><p>&copy; 2026 SAHAN DATA - All rights reserved.</p></div>
+
+<script>
+    (function() {
+        const SUPABASE_URL = 'https://xccbmivhcbukqyplstae.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhjY2JtaXZoY2J1a3F5cGxzdGFlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEzNTcyNTIsImV4cCI6MjA4NjkzMzI1Mn0.lGr3cDItP1-LVJgzd5wW5gp0HsGUonuZj-T9qGL2nF0';
+        const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // Helper render rank list
+        function renderList(containerId, items, nameKey, valueKey, userIdKey = null, isUserClickable = false) {
+            const container = document.getElementById(containerId);
+            if (!items || items.length === 0) { container.innerHTML = '<div class="loading">No data</div>'; return; }
+            container.innerHTML = items.map((item, idx) => {
+                let medal = '';
+                if (idx === 0) medal = '<span class="medal">🥇</span>';
+                else if (idx === 1) medal = '<span class="medal">🥈</span>';
+                else if (idx === 2) medal = '<span class="medal">🥉</span>';
+                else medal = `<span class="rank-number">${idx+1}.</span>`;
+                const name = escapeHtml(item[nameKey]);
+                const value = item[valueKey];
+                const userId = (userIdKey && item[userIdKey]) ? item[userIdKey] : null;
+                const clickAttr = (isUserClickable && userId) ? ` onclick="window.showUserDetails('${userId}', '${name}')"` : '';
+                return `<div class="rank-item"${clickAttr}>
+                            <div class="rank-name">${medal} ${name}</div>
+                            <div class="rank-value">${value}</div>
+                        </div>`;
+            }).join('');
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[m]));
+        }
+
+        // --- Data fetching with time filters ---
+        async function fetchReferrals(time) {
+            if (time === 'week') {
+                const { data } = await sb.rpc('get_weekly_top_referrers');
+                return (data || []).map(d => ({ ...d, user_id: d.customer_id, full_name: d.full_name, referral_count: d.referral_count }));
+            } else if (time === 'month') {
+                const { data } = await sb.from('customers').select('id, full_name, total_referrals').gt('total_referrals',0).order('total_referrals',{ascending:false}).limit(20);
+                return data.map(d => ({ user_id: d.id, full_name: d.full_name, referral_count: d.total_referrals }));
+            } else {
+                const { data } = await sb.from('customers').select('id, full_name, total_referrals').gt('total_referrals',0).order('total_referrals',{ascending:false}).limit(20);
+                return data.map(d => ({ user_id: d.id, full_name: d.full_name, referral_count: d.total_referrals }));
+            }
+        }
+
+        async function fetchSellers(time) {
+            if (time === 'month') {
+                const now = new Date();
+                const { data } = await sb.rpc('get_monthly_top_seller', { p_year: now.getFullYear(), p_month: now.getMonth()+1 });
+                return data ? [{ user_id: data.customer_id, full_name: data.full_name, order_count: data.order_count }] : [];
+            } else {
+                const { data } = await sb.rpc('get_top_sellers');
+                return (data || []).map(d => ({ user_id: d.customer_id, full_name: d.full_name, order_count: d.order_count }));
+            }
+        }
+
+        async function fetchPromoted(time) {
+            if (time === 'month') {
+                const now = new Date();
+                const { data } = await sb.rpc('get_monthly_promo_winner', { p_year: now.getFullYear(), p_month: now.getMonth()+1 });
+                return data ? [{ user_id: data.customer_id, full_name: data.full_name, usage_count: data.usage_count }] : [];
+            } else {
+                const { data } = await sb.rpc('get_top_promoted');
+                return (data || []).map(d => ({ user_id: d.customer_id, full_name: d.full_name, usage_count: d.usage_count }));
+            }
+        }
+
+        // Use RPC functions for districts, groups, schools (reliable)
+        async function fetchDistricts() {
+            const { data, error } = await sb.rpc('get_top_districts');
+            if (error) return [];
+            return (data || []).map(d => ({ district_name: d.district_name, order_count: d.order_count }));
+        }
+
+        async function fetchGroups() {
+            const { data, error } = await sb.rpc('get_top_groups');
+            if (error) return [];
+            return (data || []).map(d => ({ group_code: d.group_code, order_count: d.order_count }));
+        }
+
+        async function fetchSchools() {
+            const { data, error } = await sb.rpc('get_top_schools');
+            if (error) return [];
+            return (data || []).map(d => ({ school_name: d.school_name, order_count: d.order_count }));
+        }
+
+        // Refresh individual card based on category and time
+        async function refreshCard(category, time) {
+            if (category === 'referrals') {
+                const data = await fetchReferrals(time);
+                renderList('referralsList', data, 'full_name', 'referral_count', 'user_id', true);
+            } else if (category === 'sellers') {
+                const data = await fetchSellers(time);
+                renderList('sellersList', data, 'full_name', 'order_count', 'user_id', true);
+            } else if (category === 'promoted') {
+                const data = await fetchPromoted(time);
+                renderList('promotedList', data, 'full_name', 'usage_count', 'user_id', true);
+            }
+        }
+
+        async function refreshExtraCategories() {
+            const districts = await fetchDistricts();
+            renderList('districtsList', districts, 'district_name', 'order_count', null, false);
+            const groups = await fetchGroups();
+            renderList('groupsList', groups, 'group_code', 'order_count', null, false);
+            const schools = await fetchSchools();
+            renderList('schoolsList', schools, 'school_name', 'order_count', null, false);
+        }
+
+        // Modal functions
+        window.showUserDetails = async (userId, userName) => {
+            const modal = document.getElementById('userModal');
+            const modalName = document.getElementById('modalUserName');
+            const modalRanks = document.getElementById('modalRanks');
+            modalName.innerText = userName;
+            modalRanks.innerHTML = '<div class="loading">Loading ranks...</div>';
+            modal.style.display = 'flex';
+
+            try {
+                const { data: userData } = await sb.from('customers').select('district, group_code, school').eq('id', userId).single();
+                const district = userData?.district || 'N/A';
+                const group = userData?.group_code || 'N/A';
+                const school = userData?.school || 'N/A';
+
+                async function getRankInCategory(fetchFunc, time, valueKey, userIdKey = 'user_id') {
+                    const list = await fetchFunc(time);
+                    const idx = list.findIndex(item => item[userIdKey] === userId);
+                    if (idx !== -1) return { rank: idx+1, score: list[idx][valueKey] };
+                    return { rank: '> ' + list.length, score: 0 };
+                }
+
+                const refRank = await getRankInCategory(fetchReferrals, 'all', 'referral_count', 'user_id');
+                const sellerRank = await getRankInCategory(fetchSellers, 'all', 'order_count', 'user_id');
+                const promoRank = await getRankInCategory(fetchPromoted, 'all', 'usage_count', 'user_id');
+
+                const districtsList = await fetchDistricts();
+                const districtRank = districtsList.findIndex(d => d.district_name === district);
+                const districtRankVal = districtRank !== -1 ? districtRank+1 : '> ' + districtsList.length;
+                const groupsList = await fetchGroups();
+                const groupRank = groupsList.findIndex(g => g.group_code === group);
+                const groupRankVal = groupRank !== -1 ? groupRank+1 : '> ' + groupsList.length;
+                const schoolsList = await fetchSchools();
+                const schoolRank = schoolsList.findIndex(s => s.school_name === school);
+                const schoolRankVal = schoolRank !== -1 ? schoolRank+1 : '> ' + schoolsList.length;
+
+                modalRanks.innerHTML = `
+                    <div class="rank-stat"><strong>🏆 Referral Rank:</strong> #${refRank.rank} (${refRank.score} referrals)</div>
+                    <div class="rank-stat"><strong>🛒 Seller Rank:</strong> #${sellerRank.rank} (${sellerRank.score} orders)</div>
+                    <div class="rank-stat"><strong>⭐ Promoted Rank:</strong> #${promoRank.rank} (${promoRank.score} uses)</div>
+                    <div class="rank-stat"><strong>🏙️ District (${district}):</strong> #${districtRankVal}</div>
+                    <div class="rank-stat"><strong>👥 Group (${group}):</strong> #${groupRankVal}</div>
+                    <div class="rank-stat"><strong>🏫 School (${school}):</strong> #${schoolRankVal}</div>
+                `;
+            } catch (err) {
+                console.error(err);
+                modalRanks.innerHTML = '<div class="loading">Error loading ranks</div>';
+            }
+        };
+
+        document.querySelector('.close').addEventListener('click', () => {
+            document.getElementById('userModal').style.display = 'none';
+        });
+        window.onclick = function(event) {
+            const modal = document.getElementById('userModal');
+            if (event.target === modal) modal.style.display = 'none';
+        };
+
+        document.getElementById('refTime').addEventListener('change', (e) => refreshCard('referrals', e.target.value));
+        document.getElementById('sellTime').addEventListener('change', (e) => refreshCard('sellers', e.target.value));
+        document.getElementById('promTime').addEventListener('change', (e) => refreshCard('promoted', e.target.value));
+
+        refreshCard('referrals', 'week');
+        refreshCard('sellers', 'week');
+        refreshCard('promoted', 'week');
+        refreshExtraCategories();
+    })();
+</script>
+</body>
+</html>

@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="so">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>SAHAN DATA - Register</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * { box-sizing: border-box; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; }
+        body { background: linear-gradient(145deg, #3d9ce0 0%, #73c2f0 100%); min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 2rem 1rem; }
+        .register-container { max-width: 650px; width: 100%; background: white; border-radius: 2rem; box-shadow: 0 20px 35px rgba(0,0,0,0.2); overflow: hidden; }
+        .header { background: #ffd966; padding: 1.5rem; text-align: center; }
+        .header h1 { color: #1e3c72; font-size: 1.8rem; }
+        .header p { color: #2c3e66; margin-top: 0.3rem; }
+        form { padding: 2rem 1.8rem; }
+        .form-group { margin-bottom: 1.3rem; position: relative; }
+        label { font-weight: 600; color: #1e3c72; display: block; margin-bottom: 0.4rem; font-size: 0.9rem; }
+        label .required { color: #dc2626; margin-left: 0.2rem; }
+        input, select { width: 100%; padding: 0.8rem 1rem; border-radius: 1rem; border: 1px solid #ccc; font-size: 1rem; outline: none; transition: 0.2s; background: #fff; }
+        input:focus, select:focus { border-color: #f59e0b; box-shadow: 0 0 0 2px rgba(245,158,11,0.2); }
+        input.readonly-field, input[readonly] { background-color: #f0f4f9; cursor: not-allowed; border-color: #ddd; }
+        .error-message { color: #dc2626; font-size: 0.75rem; margin-top: 0.3rem; display: block; }
+        .success-message { color: #10b981; font-size: 0.8rem; margin-top: 0.5rem; }
+        button { background: #f59e0b; color: white; border: none; padding: 0.9rem; border-radius: 2rem; font-size: 1rem; font-weight: bold; cursor: pointer; width: 100%; transition: 0.2s; margin-top: 0.5rem; }
+        button:hover { background: #d97706; }
+        button:disabled { background: #a0aec0; cursor: not-allowed; }
+        .link-field { display: flex; gap: 0.5rem; align-items: center; margin-top: 0.5rem; }
+        .link-field input { flex: 1; }
+        .copy-btn { background: #1e3c72; width: auto; padding: 0.8rem 1rem; margin: 0; border-radius: 1rem; font-size: 0.8rem; }
+        .copy-btn:hover { background: #2c5282; }
+        .hidden { display: none; }
+        .nav-links { text-align: center; margin-top: 1.5rem; font-size: 0.85rem; }
+        .nav-links a { color: #1e3c72; text-decoration: none; margin: 0 0.5rem; }
+        .nav-links a:hover { text-decoration: underline; }
+        .tooltip-hint { border-bottom: 1px dashed #888; cursor: help; }
+        .loading-spinner { display: inline-block; width: 18px; height: 18px; border: 2px solid white; border-radius: 50%; border-top-color: transparent; animation: spin 0.6s linear infinite; vertical-align: middle; margin-right: 8px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        hr { margin: 1rem 0; }
+        @media (max-width: 550px) { form { padding: 1.5rem; } .header h1 { font-size: 1.4rem; } }
+    </style>
+</head>
+<body>
+<div class="register-container">
+    <div class="header">
+        <h1>⭐ SAHAN DATA ⭐</h1>
+        <p>Ku soo biir xidigaha suuq-geynta</p>
+    </div>
+    <form id="registerForm">
+        <!-- Full Name -->
+        <div class="form-group">
+            <label>Full Name <span class="required">*</span> <span class="tooltip-hint" title="Magacaaga buuxa (Fadlan qor si sax ah)">ⓘ</span></label>
+            <input type="text" id="fullName" placeholder="Ahmed Ali" required>
+            <div class="error-message" id="fullNameError"></div>
+        </div>
+
+        <!-- Phone Number -->
+        <div class="form-group">
+            <label>Phone Number <span class="required">*</span> <span class="tooltip-hint" title="Tusaale: 612345678 ama +252612345678">ⓘ</span></label>
+            <input type="tel" id="phoneNumber" placeholder="612345678" required>
+            <div class="error-message" id="phoneError"></div>
+        </div>
+
+        <!-- Email -->
+        <div class="form-group">
+            <label>Email <span class="required">*</span></label>
+            <input type="email" id="email" placeholder="ahmed@example.com" required>
+            <div class="error-message" id="emailError"></div>
+        </div>
+
+        <!-- District (Autocomplete) -->
+        <div class="form-group">
+            <label>District <span class="required">*</span> <span class="tooltip-hint" title="Qor ama dooro degmadaada (2 xaraf ka dib waxa soo baxaya liis)">ⓘ</span></label>
+            <input list="districtsList" id="district" placeholder="Hodan" autocomplete="off" required>
+            <datalist id="districtsList"></datalist>
+            <div class="error-message" id="districtError"></div>
+        </div>
+
+        <!-- School / University (Autocomplete) -->
+        <div class="form-group">
+            <label>School/University <span class="required">*</span> <span class="tooltip-hint" title="Qor ama dooro iskuulka ama jaamacadda aad dhigatay">ⓘ</span></label>
+            <input list="schoolsList" id="school" placeholder="Hodan High" autocomplete="off" required>
+            <datalist id="schoolsList"></datalist>
+            <div class="error-message" id="schoolError"></div>
+        </div>
+
+        <!-- Password -->
+        <div class="form-group">
+            <label>Password <span class="required">*</span> <span class="tooltip-hint" title="Ugu yaraan 6 xaraf">ⓘ</span></label>
+            <input type="password" id="password" placeholder="••••••" required>
+            <div class="error-message" id="passwordError"></div>
+        </div>
+
+        <!-- Group Code (Readonly, auto-fetched) -->
+        <div class="form-group">
+            <label>Group Code <span class="tooltip-hint" title="System ayaa si otomaatig ah u qoondeeya (A – Y)">ⓘ</span></label>
+            <input type="text" id="groupCode" readonly class="readonly-field" placeholder="Loading...">
+            <div class="error-message" id="groupCodeError"></div>
+        </div>
+
+        <!-- Referral Link (hidden until success) -->
+        <div id="referralSection" class="hidden">
+            <hr>
+            <label>Your Referral Link (share with friends)</label>
+            <div class="link-field">
+                <input type="text" id="referralLink" readonly class="readonly-field">
+                <button type="button" class="copy-btn" id="copyLinkBtn">Copy</button>
+            </div>
+            <div class="success-message" id="copyMessage"></div>
+        </div>
+
+        <button type="submit" id="submitBtn">Register</button>
+        <div id="formError" class="error-message" style="text-align:center; margin-top:1rem;"></div>
+    </form>
+    <div class="nav-links">
+        <a href="index.html">🏠 Home</a> | <a href="login.html">🔐 Login</a> | <a href="faq.html">❓ FAQ</a>
+    </div>
+</div>
+
+<script>
+    // ========== 1. SUPABASE SETUP ==========
+    const SUPABASE_URL = 'https://xccbmivhcbukqyplstae.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhjY2JtaXZoY2J1a3F5cGxzdGFlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEzNTcyNTIsImV4cCI6MjA4NjkzMzI1Mn0.lGr3cDItP1-LVJgzd5wW5gp0HsGUonuZj-T9qGL2nF0';  // 🔁 Replace with your real anon key
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // ========== 2. LISTS FOR AUTOCOMPLETE ==========
+    // Somalia districts (full list)
+    const somaliaDistricts = [
+        "Hodan", "Yaqshid", "Hamar Jajab", "Warta Nabadda", "Boondheere", "Shibis", "Xamar Weyne",
+        "Dharkenley", "Karaan", "Heliwaa", "Cabdicasiis", "Howlwadaag", "Dayniile", "Garasbaaley",
+        "Kaxda", "Waaberi", "Shangani", "Gubudley", "Darusalam", "Wadajir",
+        "Jowhar", "Mahaday", "Adan Yabaal", "Balcad", "Cadale", "Beledweyne", "Bulo Burto",
+        "Jalalaqsi", "Mataban", "Dhuusamareeb", "Cadaado", "Guri Ceel", "Cabudwaaq", "Galkayo",
+        "Hobyo", "Harardheere", "Bosaso", "Qardho", "Bandarbeyla", "Garoowe", "Eyl", "Ceerigaabo",
+        "Badhan", "Las Anod", "Taleex", "Buuhoodle", "Burco", "Hargeysa", "Gabiley", "Borama",
+        "Zeila", "Kismaayo", "Jamaame", "Bu'aale", "Garbahaarey", "Luuq", "Baardheere", "Baydhabo",
+        "Diinsoor", "Xuddur", "Waajid", "Merca", "Qoryoley", "Afgooye", "Wanlaweyn"
+    ];
+    // Sample schools & universities in Somalia
+    const somaliaSchools = [
+        "Hodan High School", "Yaqshid Secondary", "Karaan School", "Heliwaa Primary",
+        "Jaamacadda Umuadda Soomaaliyeed", "SIMAD University", "East Africa University",
+        "Amoud University", "University of Hargeysa", "Puntland State University",
+        "Mogadishu University", "Benadir University", "Nugaal University", "Sanaag University",
+        "Gollis University", "Admas University College", "City University", "Hormuud University",
+        "Abaarso School", "Hargeysa International School", "Al-Asaalah School", "Hamdi Academy"
+    ];
+    // Populate datalists
+    const districtsDatalist = document.getElementById('districtsList');
+    const schoolsDatalist = document.getElementById('schoolsList');
+    somaliaDistricts.forEach(d => { let opt = document.createElement('option'); opt.value = d; districtsDatalist.appendChild(opt); });
+    somaliaSchools.forEach(s => { let opt = document.createElement('option'); opt.value = s; schoolsDatalist.appendChild(opt); });
+
+    // ========== 3. GET NEXT GROUP CODE ==========
+    async function fetchGroupCode() {
+        try {
+            const { data, error } = await supabaseClient.rpc('get_next_group_code');
+            if (error) throw error;
+            document.getElementById('groupCode').value = data || 'A';
+        } catch (err) {
+            console.error(err);
+            document.getElementById('groupCode').value = 'A';
+        }
+    }
+    fetchGroupCode();
+
+    // ========== 4. HANDLE REFERRAL FROM URL ==========
+    let referrerId = null;
+    const urlParams = new URLSearchParams(window.location.search);
+    const refCode = urlParams.get('ref');
+    if (refCode) {
+        supabaseClient.from('customers').select('id').eq('referral_code', refCode).single()
+            .then(({ data, error }) => { if (!error && data) referrerId = data.id; })
+            .catch(() => {});
+    }
+
+    // ========== 5. VALIDATION FUNCTIONS ==========
+    function validateFullName(name) {
+        if (!name.trim()) return "Full name is required";
+        if (name.trim().length < 3) return "At least 3 characters";
+        return "";
+    }
+    function validatePhone(phone) {
+        if (!phone.trim()) return "Phone number is required";
+        const regex = /^(\+252|0)?(61|62|63|68|69)[0-9]{7}$/;
+        if (!regex.test(phone.trim())) return "Invalid Somali phone (e.g., 612345678 or +252612345678)";
+        return "";
+    }
+    function validateEmail(email) {
+        if (!email.trim()) return "Email is required";
+        const re = /^[^\s@]+@([^\s@]+\.)+[^\s@]+$/;
+        if (!re.test(email.trim())) return "Enter a valid email address";
+        return "";
+    }
+    function validateDistrict(district) {
+        if (!district.trim()) return "District is required";
+        return "";
+    }
+    function validateSchool(school) {
+        if (!school.trim()) return "School/University is required";
+        return "";
+    }
+    function validatePassword(pwd) {
+        if (!pwd) return "Password is required";
+        if (pwd.length < 6) return "Password must be at least 6 characters";
+        return "";
+    }
+
+    // Real-time validation on blur
+    const fullNameInput = document.getElementById('fullName');
+    const phoneInput = document.getElementById('phoneNumber');
+    const emailInput = document.getElementById('email');
+    const districtInput = document.getElementById('district');
+    const schoolInput = document.getElementById('school');
+    const passwordInput = document.getElementById('password');
+
+    fullNameInput.addEventListener('blur', () => { document.getElementById('fullNameError').innerText = validateFullName(fullNameInput.value); });
+    phoneInput.addEventListener('blur', () => { document.getElementById('phoneError').innerText = validatePhone(phoneInput.value); });
+    emailInput.addEventListener('blur', () => { document.getElementById('emailError').innerText = validateEmail(emailInput.value); });
+    districtInput.addEventListener('blur', () => { document.getElementById('districtError').innerText = validateDistrict(districtInput.value); });
+    schoolInput.addEventListener('blur', () => { document.getElementById('schoolError').innerText = validateSchool(schoolInput.value); });
+    passwordInput.addEventListener('blur', () => { document.getElementById('passwordError').innerText = validatePassword(passwordInput.value); });
+
+    // ========== 6. FORM SUBMIT ==========
+    const form = document.getElementById('registerForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const formErrorDiv = document.getElementById('formError');
+    const referralSection = document.getElementById('referralSection');
+    const referralLinkInput = document.getElementById('referralLink');
+    const copyBtn = document.getElementById('copyLinkBtn');
+    const copyMsg = document.getElementById('copyMessage');
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        // Clear previous errors
+        formErrorDiv.innerText = '';
+        const errors = {
+            fullName: validateFullName(fullNameInput.value),
+            phone: validatePhone(phoneInput.value),
+            email: validateEmail(emailInput.value),
+            district: validateDistrict(districtInput.value),
+            school: validateSchool(schoolInput.value),
+            password: validatePassword(passwordInput.value)
+        };
+        if (errors.fullName || errors.phone || errors.email || errors.district || errors.school || errors.password) {
+            document.getElementById('fullNameError').innerText = errors.fullName;
+            document.getElementById('phoneError').innerText = errors.phone;
+            document.getElementById('emailError').innerText = errors.email;
+            document.getElementById('districtError').innerText = errors.district;
+            document.getElementById('schoolError').innerText = errors.school;
+            document.getElementById('passwordError').innerText = errors.password;
+            formErrorDiv.innerText = "Please fix the errors above.";
+            return;
+        }
+
+        // Disable button and show loading
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="loading-spinner"></span> Registering...';
+
+        try {
+            // 1. Sign up with Supabase Auth
+            const { data: authData, error: authError } = await supabaseClient.auth.signUp({
+                email: emailInput.value.trim(),
+                password: passwordInput.value,
+                phone: phoneInput.value.trim()
+            });
+            if (authError) throw new Error(`Auth error: ${authError.message}`);
+            if (!authData.user) throw new Error("Signup failed, no user returned");
+
+            const uid = authData.user.id;
+
+            // 2. Call register_customer RPC
+            const { data: customerData, error: rpcError } = await supabaseClient.rpc('register_customer', {
+                p_uid: uid,
+                p_full_name: fullNameInput.value.trim(),
+                p_phone_number: phoneInput.value.trim(),
+                p_email: emailInput.value.trim(),
+                p_district: districtInput.value.trim(),
+                p_school: schoolInput.value.trim(),
+                p_referred_by: referrerId
+            });
+            if (rpcError) throw new Error(`Registration failed: ${rpcError.message}`);
+
+            // 3. Success - display referral link
+            const referralCode = customerData.referral_code;
+            const groupCodeFromRPC = customerData.group_code;
+            const promoCode = customerData.promo_code;
+
+            // Update group code field with the actual assigned one
+            document.getElementById('groupCode').value = groupCodeFromRPC;
+
+            const baseUrl = window.location.origin + window.location.pathname.replace(/\/[^/]*$/, '/') + 'register.html';
+            const referralUrl = `${baseUrl}?ref=${referralCode}`;
+            referralLinkInput.value = referralUrl;
+            referralSection.classList.remove('hidden');
+
+            // Show additional success info
+            formErrorDiv.style.color = '#10b981';
+            formErrorDiv.innerText = `✅ Registration successful! Your promo code is: ${promoCode}. You can now login.`;
+
+            // Clear password field for security
+            passwordInput.value = '';
+
+            // Optionally redirect after 3 seconds, but we keep user on page to copy link
+            setTimeout(() => {
+                window.location.href = 'login.html';
+            }, 5000);
+        } catch (err) {
+            console.error(err);
+            formErrorDiv.style.color = '#dc2626';
+            formErrorDiv.innerText = err.message;
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = 'Register';
+        }
+    });
+
+    // Copy referral link
+    copyBtn.addEventListener('click', () => {
+        if (!referralLinkInput.value) return;
+        referralLinkInput.select();
+        document.execCommand('copy');
+        copyMsg.innerText = 'Link copied!';
+        setTimeout(() => { copyMsg.innerText = ''; }, 2000);
+    });
+</script>
+</body>
+</html>

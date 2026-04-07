@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="so">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>SAHAN DATA – Order</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; }
+        body {
+            background: linear-gradient(145deg, #3d9ce0 0%, #73c2f0 100%);
+            min-height: 100vh;
+            padding: 2rem 1rem;
+        }
+        .container { max-width: 700px; margin: 0 auto; }
+        .header { text-align: center; margin-bottom: 2rem; }
+        .header h1 { font-size: 2.5rem; color: white; text-shadow: 0 2px 4px rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: center; gap: 1rem; }
+        .header p { color: #ffd966; font-size: 1rem; }
+        .card { background: white; border-radius: 1.5rem; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.1); margin-bottom: 1.5rem; }
+        .card-header { background: #ffd966; padding: 0.8rem 1.2rem; }
+        .card-header h3 { color: #2c3e66; margin: 0; font-size: 1.2rem; display: flex; align-items: center; gap: 0.5rem; }
+        .card-body { padding: 1.2rem; }
+        /* Two columns grid */
+        .two-col-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin: 15px 0;
+        }
+        .company-card, .service-item, .plan-item, .payment-item {
+            background: #f8f9fc;
+            border-radius: 1rem;
+            padding: 14px;
+            cursor: pointer;
+            border: 1.5px solid #e2e8f0;
+            transition: all 0.2s;
+        }
+        .company-card { text-align: center; }
+        .company-card .name { font-weight: 700; font-size: 1rem; color: #1e3c72; }
+        .company-card 
+        
+        plan-item
+        
+      sub { font-size: 0.7rem; color: #6c757d; }
+        .service-item, .plan-item, .payment-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .plan-price { font-weight: bold; color: #28a745; }
+        .old-price { text-decoration: line-through; color: #999; font-size: 0.75rem; margin-right: 6px; }
+        .company-card.selected, .service-item.selected, .plan-item.selected, .payment-item.selected {
+            border-color: #f59e0b;
+            background: #fff3e0;
+        }
+        .input-group { margin-bottom: 1rem; }
+        .input-group label { display: block; font-weight: 600; margin-bottom: 0.4rem; color: #1e3c72; font-size: 0.85rem; }
+        .input-group input { width: 100%; padding: 0.8rem; border: 1.5px solid #e2e8f0; border-radius: 1rem; font-size: 1rem; background: white; }
+        .input-group input:focus { outline: none; border-color: #f59e0b; }
+        .total-box { background: #f0f4f9; padding: 0.8rem; border-radius: 1rem; text-align: center; font-size: 1.2rem; font-weight: bold; margin: 15px 0; }
+        .btn { width: 100%; padding: 0.8rem; border: none; border-radius: 2rem; font-size: 1rem; font-weight: bold; cursor: pointer; transition: 0.2s; margin-top: 10px; }
+        .btn-primary { background: #1e3c72; color: white; }
+        .btn-primary:hover { background: #2a5298; }
+        .btn-back { background: #e2e8f0; color: #1e2a3e; }
+        .payment-buttons { display: flex; gap: 12px; margin: 15px 0; }
+        .payment-buttons button { flex: 1; padding: 12px; border-radius: 2rem; font-weight: 600; border: none; }
+        .btn-evc { background: #1e3c72; color: white; }
+        .btn-edahab { background: #28a745; color: white; }
+        .btn-jeeb { background: #ffc107; color: #1e3c72; }
+        .message { margin-top: 1rem; padding: 0.8rem; border-radius: 1rem; text-align: center; display: none; }
+        .message.success { background: #d4edda; color: #155724; display: block; }
+        .message.error { background: #f8d7da; color: #721c24; display: block; }
+        .message.info { background: #d1ecf1; color: #0c5460; display: block; }
+        .nav-buttons { display: flex; justify-content: space-between; gap: 12px; margin-top: 15px; }
+        .step-content { display: none; }
+        .step-content.active { display: block; }
+        .footer-note { text-align: center; font-size: 0.7rem; color: #ffd966; margin-top: 20px; }
+        @media (max-width: 550px) {
+            .two-col-grid { grid-template-columns: 1fr; }
+            .payment-buttons { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>⭐ SAHAN DATA ⭐</h1>
+        <p>Data & Voice Packages</p>
+    </div>
+
+    <!-- Step 1: Company -->
+    <div id="step1" class="step-content active">
+        <div class="card">
+            <div class="card-header"><h3>📱 Dooro Shirkada</h3></div>
+            <div class="card-body">
+                <div class="two-col-grid">
+                    <div class="company-card" data-company="Hormuud"><div class="name">Hormuud</div><div class="sub">EVC Plus</div></div>
+                    <div class="company-card" data-company="Somtel"><div class="name">Somtel</div><div class="sub">eDahab</div></div>
+                    <div class="company-card" data-company="Golis"><div class="name">Golis</div><div class="sub">Sahal</div></div>
+                    <div class="company-card" data-company="Telesom"><div class="name">Telesom</div><div class="sub">Zaad</div></div>
+                </div>
+                <button class="btn btn-primary" id="nextStep1">Next →</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Step 2: Service -->
+    <div id="step2" class="step-content">
+        <div class="card">
+            <div class="card-header"><h3 id="serviceTitle">📦 Dooro Nooca Adeegga</h3></div>
+            <div class="card-body">
+                <div id="serviceList" class="two-col-grid"></div>
+                <div class="nav-buttons">
+                    <button class="btn btn-back" id="backStep2">← Back</button>
+                    <button class="btn btn-primary" id="nextStep2">Next →</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Step 3: Plan -->
+    <div id="step3" class="step-content">
+        <div class="card">
+            <div class="card-header"><h3 id="planTitle">📊 Dooro Plan-ka</h3></div>
+            <div class="card-body">
+                <div id="planList" class="two-col-grid"></div>
+                <div class="nav-buttons">
+                    <button class="btn btn-back" id="backStep3">← Back</button>
+                    <button class="btn btn-primary" id="nextStep3">Next →</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Step 4: Payment Method -->
+    <div id="step4" class="step-content">
+        <div class="card">
+            <div class="card-header"><h3>💳 Dooro Habka Lacag Bixinta</h3></div>
+            <div class="card-body">
+                <div class="two-col-grid">
+                    <div class="payment-item" data-payment="evc"><strong>💵 EVC Plus</strong><br><span style="font-size:0.7rem;">Hormuud</span></div>
+                    <div class="payment-item" data-payment="edahab"><strong>💎 eDahab</strong><br><span style="font-size:0.7rem;">Somtel</span></div>
+                    <div class="payment-item" data-payment="jeeb"><strong>📱 Jeeb</strong><br><span style="font-size:0.7rem;">Somnet</span></div>
+                </div>
+                <div class="total-box" id="paymentTotal">💰 Total: $0.00</div>
+                <div class="nav-buttons">
+                    <button class="btn btn-back" id="backStep4">← Back</button>
+                    <button class="btn btn-primary" id="nextStep4">Next →</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Step 5: Payment Info & Confirm -->
+    <div id="step5" class="step-content">
+        <div class="card">
+            <div class="card-header"><h3>💳 Ku shubo</h3></div>
+            <div class="card-body">
+                <div id="selectedPlanInfo" style="background:#e8f0fe; padding:12px; border-radius:16px; margin-bottom:15px;"></div>
+                <div class="input-group">
+                    <label>📞 Lambarka lacagta aad ka direysid</label>
+                    <input type="tel" id="senderPhone" placeholder="612538844" required>
+                    <div style="font-size:0.7rem; color:#666;">Lambarkaaga EVC/eDahab</div>
+                </div>
+                <div class="input-group">
+                    <label>📱 Lambarka data-ga loo siideynayo</label>
+                    <input type="tel" id="receiverPhone" placeholder="612538844" required>
+                    <div style="font-size:0.7rem; color:#666;">Lambarka qofka helaya</div>
+                </div>
+                <div class="input-group">
+                    <label>🎯 Promo Code (optional)</label>
+                    <input type="text" id="promoCode" placeholder="e.g., 1234" maxlength="4">
+                </div>
+                <div class="total-box" id="finalTotal">💰 Total: $0.00</div>
+                <div class="payment-buttons">
+                    <button class="btn-evc" id="payEVC">💵 EVC Plus</button>
+                    <button class="btn-edahab" id="payEDahab">💎 eDahab</button>
+                    <button class="btn-jeeb" id="payJeeb">📱 Jeeb</button>
+                </div>
+                <button class="btn btn-back" id="backStep5">← Back</button>
+                <div id="paymentMessage" class="message"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer-note">Powered by SAHAN DATA</div>
+</div>
+
+<script>
+    (function() {
+        const SUPABASE_URL = 'https://xccbmivhcbukqyplstae.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhjY2JtaXZoY2J1a3F5cGxzdGFlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEzNTcyNTIsImV4cCI6MjA4NjkzMzI1Mn0.lGr3cDItP1-LVJgzd5wW5gp0HsGUonuZj-T9qGL2nF0';
+        const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // Data definitions (services, plans, ussdConfig) same as before
+        const services = {
+            Hormuud: ["Unlimited Data", "Anfac Plus GB", "Anfac", "Recharge Voice", "Hormuud Voice"],
+            Somtel: ["Dhameys Unlimited", "Muraadso", "Abaal GB", "Kaar"],
+            Golis: ["Golis Data", "Golis Voice"],
+            Telesom: ["Telesom Data", "Telesom Voice"]
+        };
+        const plans = {
+            "Unlimited Data": [
+                { name: "Daily Unlimited", price: 0.70, oldPrice: 0.80, amount_cents: 70, period: "24 Hrs" },
+                { name: "Weekly Unlimited", price: 5.00, oldPrice: 5.50, amount_cents: 500, period: "7 Days" },
+                { name: "Monthly Unlimited", price: 17.50, oldPrice: 20.00, amount_cents: 1750, period: "30 Days" }
+            ],
+            "Anfac Plus GB": [
+                { name: "400MB + 10min", price: 0.23, oldPrice: 0.25, amount_cents: 23, period: "24 Hrs" },
+                { name: "2GB + 80min", price: 0.90, oldPrice: 1.00, amount_cents: 90, period: "15 Days" },
+                { name: "5GB + 160min", price: 1.78, oldPrice: 2.00, amount_cents: 178, period: "30 Days" }
+            ],
+            "Anfac": [
+                { name: "8 min", price: 0.09, amount_cents: 9, period: "30 Days" },
+                { name: "40 min", price: 0.45, amount_cents: 45, period: "30 Days" },
+                { name: "5 min", price: 0.89, oldPrice: 1.00, amount_cents: 89, period: "30 Days" }
+            ],
+            "Dhameys Unlimited": [
+                { name: "6 Hours", price: 0.20, amount_cents: 20, period: "6 Hrs" },
+                { name: "12 Hours", price: 0.35, amount_cents: 35, period: "12 Hrs" },
+                { name: "24 Hours", price: 0.70, oldPrice: 0.80, amount_cents: 70, period: "24 Hrs" },
+                { name: "7 Days", price: 4.25, amount_cents: 425, period: "7 Days" },
+                { name: "30 Days", price: 17.50, amount_cents: 1750, period: "30 Days" }
+            ],
+            "Muraadso": [
+                { name: "Daily Social", price: 0.22, oldPrice: 0.25, amount_cents: 22, period: "24 Hrs" },
+                { name: "Monthly Social", price: 4.50, oldPrice: 5.00, amount_cents: 450, period: "30 Days" }
+            ],
+            "Abaal GB": [
+                { name: "425 MB", price: 0.23, oldPrice: 0.25, amount_cents: 23, period: "No Expiry" },
+                { name: "1.2 GB", price: 0.46, oldPrice: 0.50, amount_cents: 46, period: "No Expiry" },
+                { name: "2.5 GB", price: 0.91, oldPrice: 1.00, amount_cents: 91, period: "No Expiry" }
+            ],
+            "Kaar": [
+                { name: "$1 Airtime", price: 0.90, oldPrice: 1.00, amount_cents: 90, period: "30 Days" },
+                { name: "$5 Airtime", price: 4.40, oldPrice: 5.00, amount_cents: 440, period: "30 Days" }
+            ],
+            "Golis Data": [
+                { name: "500 MB", price: 1.00, amount_cents: 100, period: "7 Days" },
+                { name: "1 GB", price: 2.00, amount_cents: 200, period: "30 Days" }
+            ],
+            "Golis Voice": [
+                { name: "30 min", price: 1.50, amount_cents: 150, period: "30 Days" }
+            ],
+            "Telesom Data": [
+                { name: "1 GB", price: 2.20, amount_cents: 220, period: "30 Days" },
+                { name: "5 GB", price: 8.00, amount_cents: 800, period: "30 Days" }
+            ],
+            "Telesom Voice": [
+                { name: "50 min", price: 1.80, amount_cents: 180, period: "30 Days" }
+            ]
+        };
+        const ussdConfig = {
+            evc: { prefix: "*712*", number: "612538844", suffix: "#" },
+            edahab: { prefix: "*712*", number: "622538844", suffix: "#" },
+            jeeb: { prefix: "*812*", number: "682118366", suffix: "#" }
+        };
+
+        let selectedCompany = null, selectedService = null, selectedPlan = null, selectedPayment = null, currentStep = 1;
+
+        function showStep(step) {
+            document.querySelectorAll('.step-content').forEach(el => el.classList.remove('active'));
+            document.getElementById(`step${step}`).classList.add('active');
+            currentStep = step;
+        }
+
+        function loadServices() {
+            const container = document.getElementById('serviceList');
+            const list = services[selectedCompany] || [];
+            container.innerHTML = list.map(s => `<div class="service-item" data-service="${s}"><span>${s}</span><span style="color:#f59e0b;">→</span></div>`).join('');
+            document.querySelectorAll('.service-item').forEach(el => {
+                el.addEventListener('click', () => {
+                    document.querySelectorAll('.service-item').forEach(i => i.classList.remove('selected'));
+                    el.classList.add('selected');
+                    selectedService = el.dataset.service;
+                });
+            });
+        }
+
+        function loadPlans() {
+            const container = document.getElementById('planList');
+            const list = plans[selectedService] || [];
+            container.innerHTML = list.map(p => `
+                <div class="plan-item" data-plan='${JSON.stringify(p)}'>
+                    <div><strong>${p.name}</strong><br><span style="font-size:0.7rem;">${p.period}</span></div>
+                    <div class="plan-price">${p.oldPrice ? `<span class="old-price">$${p.oldPrice}</span>` : ''}$${p.price}</div>
+                </div>
+            `).join('');
+            document.querySelectorAll('.plan-item').forEach(el => {
+                el.addEventListener('click', () => {
+                    document.querySelectorAll('.plan-item').forEach(i => i.classList.remove('selected'));
+                    el.classList.add('selected');
+                    selectedPlan = JSON.parse(el.dataset.plan);
+                    document.getElementById('paymentTotal').innerHTML = `💰 Total: $${selectedPlan.price.toFixed(2)}`;
+                });
+            });
+        }
+
+        async function findProductId(name, provider) {
+            const { data } = await sb.from('products').select('id').eq('name', name).eq('provider', provider).maybeSingle();
+            return data?.id || null;
+        }
+
+        async function createOrder(sender, productId, promo, receiver) {
+            const { data, error } = await sb.rpc('create_order', {
+                p_customer_phone: sender,
+                p_product_id: productId,
+                p_promo_code: promo || null,
+                p_receiver_phone: receiver || null
+            });
+            if (error) throw error;
+            return data;
+        }
+
+        async function processPayment(methodKey, methodName) {
+            const sender = document.getElementById('senderPhone').value.trim();
+            const receiver = document.getElementById('receiverPhone').value.trim();
+            const promo = document.getElementById('promoCode').value.trim() || null;
+            const msgDiv = document.getElementById('paymentMessage');
+            const btns = document.querySelectorAll('.payment-buttons button');
+            if (!sender || !receiver) { alert('Fadlan gali labada lambar'); return; }
+            btns.forEach(b => b.disabled = true);
+            msgDiv.className = 'message info';
+            msgDiv.innerHTML = 'Processing order...';
+            msgDiv.style.display = 'block';
+            try {
+                const productId = await findProductId(selectedPlan.name, selectedCompany);
+                if (!productId) throw new Error('Product not found in database');
+                const order = await createOrder(sender, productId, promo, receiver);
+                if (!order.success) throw new Error(order.error || 'Order failed');
+                const config = ussdConfig[methodKey];
+                const ussd = `${config.prefix}${config.number}*${selectedPlan.amount_cents}${config.suffix}`;
+                msgDiv.className = 'message success';
+                msgDiv.innerHTML = `✅ Macmiil xogta aad Soo qortay waa la keydiyay, hada waad soo dirsan kartaa lacagtaada<br>Order: ${order.order_number}<br>Amount: $${order.amount}<br>USSD: ${ussd}<br><span id="countdown">Dialing in 3s...</span>`;
+                let countdown = 3;
+                const interval = setInterval(() => {
+                    countdown--;
+                    const span = document.getElementById('countdown');
+                    if (span) span.innerText = `Dialing in ${countdown}s...`;
+                    if (countdown <= 0) {
+                        clearInterval(interval);
+                        window.location.href = `tel:${ussd}`;
+                    }
+                }, 1000);
+                setTimeout(() => {
+                    selectedCompany = null; selectedService = null; selectedPlan = null; selectedPayment = null;
+                    document.querySelectorAll('.company-card, .service-item, .plan-item, .payment-item').forEach(el => el.classList.remove('selected'));
+                    document.getElementById('senderPhone').value = '';
+                    document.getElementById('receiverPhone').value = '';
+                    document.getElementById('promoCode').value = '';
+                    showStep(1);
+                }, 5000);
+            } catch (err) {
+                msgDiv.className = 'message error';
+                msgDiv.innerHTML = `❌ Payment failed via ${methodName}.<br>${err.message}`;
+                btns.forEach(b => b.disabled = false);
+                setTimeout(() => { if (msgDiv.className === 'message error') msgDiv.style.display = 'none'; }, 4000);
+            }
+        }
+
+        // Event listeners
+        document.querySelectorAll('.company-card').forEach(card => {
+            card.addEventListener('click', () => {
+                document.querySelectorAll('.company-card').forEach(c => c.classList.remove('selected'));
+                card.classList.add('selected');
+                selectedCompany = card.dataset.company;
+            });
+        });
+        document.getElementById('nextStep1').onclick = () => {
+            if (!selectedCompany) { alert('Fadlan dooro shirkada'); return; }
+            document.getElementById('serviceTitle').innerHTML = `📦 Adeegyada ${selectedCompany}`;
+            loadServices();
+            showStep(2);
+        };
+        document.getElementById('backStep2').onclick = () => showStep(1);
+        document.getElementById('nextStep2').onclick = () => {
+            if (!selectedService) { alert('Fadlan dooro adeegga'); return; }
+            document.getElementById('planTitle').innerHTML = `📊 Plan-yada ${selectedService}`;
+            loadPlans();
+            showStep(3);
+        };
+        document.getElementById('backStep3').onclick = () => showStep(2);
+        document.getElementById('nextStep3').onclick = () => {
+            if (!selectedPlan) { alert('Fadlan dooro plan-ka'); return; }
+            document.getElementById('paymentTotal').innerHTML = `💰 Total: $${selectedPlan.price.toFixed(2)}`;
+            showStep(4);
+        };
+        document.getElementById('backStep4').onclick = () => showStep(3);
+        document.getElementById('nextStep4').onclick = () => {
+            if (!selectedPayment) { alert('Fadlan dooro habka bixinta'); return; }
+            document.getElementById('selectedPlanInfo').innerHTML = `<strong>${selectedPlan.name}</strong><br>Shirkada: ${selectedCompany}<br>Qiimaha: $${selectedPlan.price.toFixed(2)}<br>Habka bixinta: ${selectedPayment}`;
+            document.getElementById('finalTotal').innerHTML = `💰 Total: $${selectedPlan.price.toFixed(2)}`;
+            showStep(5);
+        };
+        document.getElementById('backStep5').onclick = () => showStep(4);
+        document.getElementById('payEVC').onclick = () => processPayment('evc', 'EVC Plus');
+        document.getElementById('payEDahab').onclick = () => processPayment('edahab', 'eDahab');
+        document.getElementById('payJeeb').onclick = () => processPayment('jeeb', 'Jeeb');
+        document.querySelectorAll('.payment-item').forEach(el => {
+            el.addEventListener('click', () => {
+                document.querySelectorAll('.payment-item').forEach(i => i.classList.remove('selected'));
+                el.classList.add('selected');
+                selectedPayment = el.dataset.payment;
+            });
+        });
+    })();
+</script>
+</body>
+</html>

@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="so">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>SAHAN DATA - Login & Reset</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; }
+        body { background: linear-gradient(145deg, #3d9ce0 0%, #73c2f0 100%); min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 2rem 1rem; }
+        .container { max-width: 500px; width: 100%; margin: 0 auto; }
+        .header { text-align: center; margin-bottom: 2rem; }
+        .header h1 { font-size: 2.5rem; color: white; display: flex; align-items: center; justify-content: center; gap: 1rem; }
+        .header p { color: #ffd966; font-size: 1rem; }
+        .card { background: white; border-radius: 2rem; overflow: hidden; box-shadow: 0 20px 35px rgba(0,0,0,0.2); }
+        .tabs { display: flex; background: #ffd966; }
+        .tab-btn { flex: 1; background: none; border: none; padding: 1rem; font-size: 1rem; font-weight: bold; color: #2c3e66; cursor: pointer; transition: 0.2s; }
+        .tab-btn.active { background: white; color: #f59e0b; border-radius: 1rem 1rem 0 0; }
+        .tab-content { padding: 2rem 1.8rem; display: none; }
+        .tab-content.active { display: block; }
+        .form-group { margin-bottom: 1.2rem; }
+        label { font-weight: 600; color: #1e3c72; display: block; margin-bottom: 0.4rem; }
+        input { width: 100%; padding: 0.8rem; border-radius: 1rem; border: 1px solid #ccc; font-size: 1rem; outline: none; }
+        input:focus { border-color: #f59e0b; }
+        button { background: #f59e0b; color: white; border: none; padding: 0.8rem; border-radius: 2rem; font-size: 1rem; font-weight: bold; cursor: pointer; width: 100%; transition: 0.2s; }
+        button:hover { background: #d97706; }
+        .error-message { color: #dc2626; font-size: 0.75rem; margin-top: 0.3rem; }
+        .success-message { color: #10b981; font-size: 0.85rem; margin-top: 0.5rem; text-align: center; }
+        .back-link { text-align: center; margin-top: 1rem; }
+        .back-link a { color: #1e3c72; text-decoration: none; font-size: 0.85rem; }
+        .footer { margin-top: 2rem; background: #ffd966; border-radius: 1rem; padding: 1.5rem; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 2rem; }
+        .footer-left, .footer-right { flex: 1; min-width: 180px; }
+        .footer-left h4, .footer-right h4 { font-size: 0.9rem; margin-bottom: 0.5rem; color: #2c3e66; }
+        .footer-left ul, .footer-right ul { list-style: none; padding: 0; }
+        .footer-left li, .footer-right li { margin-bottom: 0.3rem; }
+        .footer-left a, .footer-right a { text-decoration: none; color: #2c3e66; font-size: 0.75rem; }
+        .footer-contact p { font-size: 0.75rem; margin-bottom: 0.3rem; display: flex; align-items: center; gap: 0.4rem; }
+        .footer-bottom { text-align: center; padding-top: 1rem; font-size: 0.7rem; border-top: 1px solid rgba(44,62,102,0.2); margin-top: 1rem; }
+        @media (max-width: 550px) {
+            .header h1 { font-size: 1.8rem; }
+            .tab-content { padding: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1><span class="trophy">⭐</span> SAHAN DATA <span class="trophy">⭐</span></h1>
+        <p>Login or Reset Password</p>
+    </div>
+
+    <div class="card">
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="login">🔐 Login</button>
+            <button class="tab-btn" data-tab="reset">🔄 Reset Password</button>
+        </div>
+
+        <!-- Login Tab -->
+        <div id="loginTab" class="tab-content active">
+            <div class="form-group">
+                <label>Promo Code or Email</label>
+                <input type="text" id="identifier" placeholder="1234 or email@example.com">
+                <div class="error-message" id="identifierError"></div>
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="password" placeholder="••••••">
+                <div class="error-message" id="passwordError"></div>
+            </div>
+            <div class="form-group">
+                <label style="display: flex; align-items: center; gap: 0.5rem;">
+                    <input type="checkbox" id="rememberMe"> Remember me
+                </label>
+            </div>
+            <div id="lockMessage" style="background:#fff3e0; border-radius:1rem; padding:0.5rem; text-align:center; font-size:0.8rem; margin-bottom:1rem; display:none;"></div>
+            <button id="loginBtn">Login</button>
+            <div id="loginError" class="error-message" style="text-align:center; margin-top:1rem;"></div>
+        </div>
+
+        <!-- Reset Password Tab -->
+        <div id="resetTab" class="tab-content">
+            <div class="form-group">
+                <label>Promo Code or Email</label>
+                <input type="text" id="resetIdentifier" placeholder="1234 or email@example.com">
+                <div class="error-message" id="resetIdentifierError"></div>
+            </div>
+            <button id="sendResetBtn">Send Reset Link</button>
+            <div id="resetMessage" class="success-message" style="display:none;"></div>
+        </div>
+    </div>
+
+    <!-- Footer (two columns) -->
+    <div class="footer">
+        <div class="footer-left">
+            <h4>Account</h4><ul><li><a href="login.html">Login</a></li><li><a href="register.html">Register</a></li><li><a href="edit-profile.html">Edit Profile</a></li></ul>
+            <h4 style="margin-top:0.8rem;">Info</h4><ul><li><a href="faq.html">FAQ</a></li><li><a href="terms.html">Terms</a></li><li><a href="privacy.html">Privacy</a></li><li><a href="admin.html">Admin</a></li></ul>
+        </div>
+        <div class="footer-right">
+            <h4>Quick Links</h4><ul><li><a href="index.html">Home</a></li><li><a href="dashboard.html">Dashboard</a></li><li><a href="leaderboard.html">Leaderboard</a></li><li><a href="rewards.html">Rewards</a></li></ul>
+            <h4 style="margin-top:0.8rem;">History</h4><ul><li><a href="order-history.html">Order History</a></li><li><a href="referrals.html">Referrals</a></li><li><a href="notifications.html">Notifications</a></li></ul>
+            <h4 style="margin-top:0.8rem;">Contact</h4><div class="footer-contact"><p><i class="fab fa-whatsapp"></i> +252 61 253 8844</p><p><i class="fas fa-phone"></i> +252 61 253 8844</p><p><i class="fas fa-envelope"></i> support@sahandata.com</p></div>
+        </div>
+    </div>
+    <div class="footer-bottom"><p>&copy; 2026 SAHAN DATA - All rights reserved.</p></div>
+</div>
+
+<script>
+    (function() {
+        const SUPABASE_URL = 'https://xccbmivhcbukqyplstae.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhjY2JtaXZoY2J1a3F5cGxzdGFlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEzNTcyNTIsImV4cCI6MjA4NjkzMzI1Mn0.lGr3cDItP1-LVJgzd5wW5gp0HsGUonuZj-T9qGL2nF0';
+        const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // ----- LOGIN (with lockout) -----
+        const LOCK_KEY = 'login_attempts';
+        const LOCK_TIME = 30 * 60 * 1000;
+        function getLockData() {
+            const data = localStorage.getItem(LOCK_KEY);
+            if (!data) return { count: 0, lockedUntil: 0 };
+            return JSON.parse(data);
+        }
+        function setLockData(count, lockedUntil) {
+            localStorage.setItem(LOCK_KEY, JSON.stringify({ count, lockedUntil }));
+        }
+        function isLocked() {
+            const lock = getLockData();
+            if (lock.lockedUntil && Date.now() < lock.lockedUntil) {
+                const remaining = Math.ceil((lock.lockedUntil - Date.now()) / 60000);
+                document.getElementById('lockMessage').innerHTML = `⏳ Too many failed attempts. Try again in ${remaining} minutes.`;
+                document.getElementById('lockMessage').style.display = 'block';
+                return true;
+            }
+            document.getElementById('lockMessage').style.display = 'none';
+            return false;
+        }
+        function recordFailedAttempt() {
+            let lock = getLockData();
+            const now = Date.now();
+            if (lock.lockedUntil && now < lock.lockedUntil) return;
+            lock.count = (lock.count || 0) + 1;
+            if (lock.count >= 3) {
+                lock.lockedUntil = now + LOCK_TIME;
+                lock.count = 0;
+            }
+            setLockData(lock.count, lock.lockedUntil || 0);
+        }
+        function resetAttempts() { setLockData(0, 0); }
+
+        async function getEmailFromPromoCode(promoCode) {
+            const { data, error } = await sb.from('customers').select('email').eq('promo_code', promoCode).single();
+            if (error) return null;
+            return data?.email;
+        }
+
+        document.getElementById('loginBtn').addEventListener('click', async () => {
+            if (isLocked()) return;
+            const identifier = document.getElementById('identifier').value.trim();
+            const password = document.getElementById('password').value;
+            const remember = document.getElementById('rememberMe').checked;
+            const errorDiv = document.getElementById('loginError');
+            if (!identifier || !password) {
+                errorDiv.innerText = 'Please fill all fields';
+                return;
+            }
+            let email = identifier;
+            if (/^\d{4}$/.test(identifier)) {
+                email = await getEmailFromPromoCode(identifier);
+                if (!email) {
+                    errorDiv.innerText = 'Invalid promo code';
+                    recordFailedAttempt();
+                    return;
+                }
+            } else if (!identifier.includes('@')) {
+                errorDiv.innerText = 'Enter promo code (4 digits) or email';
+                recordFailedAttempt();
+                return;
+            }
+            try {
+                const { error } = await sb.auth.signInWithPassword({ email, password });
+                if (error) throw error;
+                resetAttempts();
+                if (remember) localStorage.setItem('remembered_identifier', identifier);
+                else localStorage.removeItem('remembered_identifier');
+                window.location.href = 'dashboard.html';
+            } catch (err) {
+                errorDiv.innerText = err.message;
+                recordFailedAttempt();
+                isLocked();
+            }
+        });
+
+        // Remember me
+        const remembered = localStorage.getItem('remembered_identifier');
+        if (remembered) {
+            document.getElementById('identifier').value = remembered;
+            document.getElementById('rememberMe').checked = true;
+        }
+
+        // ----- RESET PASSWORD -----
+        async function getEmailForReset(identifier) {
+            if (/^\d{4}$/.test(identifier)) {
+                const email = await getEmailFromPromoCode(identifier);
+                if (email) return email;
+                throw new Error('Invalid promo code');
+            } else if (identifier.includes('@')) {
+                return identifier;
+            } else {
+                throw new Error('Please enter a valid promo code (4 digits) or email');
+            }
+        }
+
+        document.getElementById('sendResetBtn').addEventListener('click', async () => {
+            const identifier = document.getElementById('resetIdentifier').value.trim();
+            const errorDiv = document.getElementById('resetIdentifierError');
+            const msgDiv = document.getElementById('resetMessage');
+            errorDiv.innerText = '';
+            msgDiv.style.display = 'none';
+            if (!identifier) {
+                errorDiv.innerText = 'Promo code or email required';
+                return;
+            }
+            try {
+                const email = await getEmailForReset(identifier);
+                const { error } = await sb.auth.resetPasswordForEmail(email, {
+                    redirectTo: window.location.origin + '/reset-password.html'
+                });
+                if (error) throw error;
+                msgDiv.innerHTML = `✅ Reset link sent to ${email}. Check your email (spam folder too).`;
+                msgDiv.style.display = 'block';
+            } catch (err) {
+                errorDiv.innerText = err.message;
+            }
+        });
+
+        // Tabs switching
+        const tabs = document.querySelectorAll('.tab-btn');
+        const contents = { login: document.getElementById('loginTab'), reset: document.getElementById('resetTab') };
+        tabs.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const tabId = btn.dataset.tab;
+                tabs.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                Object.values(contents).forEach(c => c.classList.remove('active'));
+                contents[tabId].classList.add('active');
+            });
+        });
+    })();
+</script>
+</body>
+</html>
