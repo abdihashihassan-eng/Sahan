@@ -2,352 +2,436 @@
 <html lang="so">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>SAHAN DATA - Home & Leaderboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>SAHAN DATA · Iibso</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; }
-        body { background: linear-gradient(145deg, #3d9ce0 0%, #73c2f0 100%); min-height: 100vh; padding: 2rem 1rem; }
-        .container { max-width: 1400px; margin: 0 auto; }
-        .title-section { text-align: center; margin-bottom: 2rem; }
-        .title-section h1 { font-size: 2.5rem; color: white; display: flex; align-items: center; justify-content: center; gap: 1rem; }
-        .title-section h2 { font-size: 1rem; color: #ffd966; font-weight: 500; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: system-ui, sans-serif; }
+        body { background: linear-gradient(145deg, #3d9ce0 0%, #73c2f0 100%); min-height: 100vh; padding: 2rem 1rem 5rem; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .title-section { text-align: center; margin-bottom: 1.5rem; }
+        .title-section h1 { font-size: 2.5rem; color: #1e1e1e; font-weight: 700; letter-spacing: 1px; }
+        .title-section h1 i { color: #FFD700; margin: 0 8px; font-size: 2.2rem; }
+        .title-section p { color: #ffd966; }
         
-        /* Stats grid */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 1rem;
-            width: 100%;
-            max-width: 1000px;
-            margin: 0 auto 2rem;
-        }
-        .stat-card {
-            background: white;
-            border-radius: 1rem;
-            padding: 1rem;
-            text-align: center;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-        }
-        .stat-card h3 { color: #f59e0b; font-size: 0.8rem; margin-bottom: 0.3rem; text-transform: uppercase; }
-        .stat-card .value { font-size: 2rem; font-weight: bold; color: #1e3c72; }
+        .nav-tabs { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem; margin-bottom: 1.5rem; background: rgba(0,0,0,0.3); padding: 0.5rem; border-radius: 2rem; }
+        .nav-tabs a { background: white; color: #1e3c72; text-decoration: none; padding: 0.3rem 0.8rem; border-radius: 2rem; font-size: 0.7rem; font-weight: 600; transition: 0.2s; }
+        .nav-tabs a:hover { background: #ffd966; }
         
-        /* Filter bar */
-        .filter-bar {
-            background: white;
-            border-radius: 1.5rem;
-            padding: 1rem;
-            margin-bottom: 2rem;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 1rem;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-        }
-        .filter-group {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            background: #f0f4f9;
-            padding: 0.3rem 1rem;
-            border-radius: 2rem;
-        }
-        .filter-group label { font-weight: 600; color: #1e3c72; font-size: 0.8rem; }
-        select, input, button {
-            padding: 0.3rem 0.8rem;
-            border-radius: 2rem;
-            border: none;
-            background: #ffd966;
-            color: #1e3c72;
-            font-weight: bold;
-            cursor: pointer;
-            outline: none;
-        }
-        select { background: white; border: 1px solid #ddd; }
-        .search-input { background: white; border: 1px solid #ddd; width: 180px; }
-        button { background: #f59e0b; color: white; }
+        .card { background: white; border-radius: 2rem; padding: 1.5rem; box-shadow: 0 8px 20px rgba(0,0,0,0.1); margin-bottom: 2rem; }
         
-        /* Leaderboard grid */
-        .leaderboard-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-        .leader-card {
-            background: white;
-            border-radius: 1.5rem;
-            overflow: hidden;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.05);
-        }
-        .card-header { background: #ffd966; padding: 0.8rem 1.2rem; }
-        .card-header h3 { color: #2c3e66; font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem; }
-        .card-body { padding: 1rem; max-height: 400px; overflow-y: auto; }
-        .rank-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0.6rem 0;
-            border-bottom: 1px solid #edf2f7;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-        .rank-item:hover { background: #f0f4f9; }
-        .rank-name { font-weight: 500; color: #1e3c72; }
-        .rank-value { background: #fff3e0; padding: 0.2rem 0.6rem; border-radius: 1rem; font-size: 0.7rem; font-weight: bold; color: #f59e0b; }
-        .loading { text-align: center; padding: 1rem; color: #718096; }
+        .step-indicator { display: flex; justify-content: center; gap: 1rem; margin-bottom: 2rem; }
+        .step-circle { width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1rem; position: relative; color: white; background: rgba(0,0,0,0.2); transition: 0.2s; }
+        .step-circle.active[data-step="1"] { background: #2ecc71; box-shadow: 0 0 12px #2ecc71; }
+        .step-circle.active[data-step="2"] { background: #f1c40f; box-shadow: 0 0 12px #f1c40f; }
+        .step-circle.active[data-step="3"] { background: #3498db; box-shadow: 0 0 12px #3498db; }
+        .step-circle.active[data-step="4"] { background: #e67e22; box-shadow: 0 0 12px #e67e22; }
+        .step-circle.active[data-step="5"] { background: #9b59b6; box-shadow: 0 0 12px #9b59b6; }
+        .step-circle::after { content: attr(data-label); position: absolute; bottom: -1.8rem; font-size: 0.65rem; white-space: nowrap; color: #ffd966; font-weight: 500; }
         
-        /* Modal for user ranks */
-        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); justify-content: center; align-items: center; }
-        .modal-content { background: white; border-radius: 1.5rem; max-width: 500px; width: 90%; padding: 1.5rem; position: relative; max-height: 80vh; overflow-y: auto; }
-        .close { position: absolute; top: 1rem; right: 1.5rem; font-size: 1.5rem; cursor: pointer; }
-        .rank-stat { display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid #eee; }
+        /* SHIRKADAHA */
+        .grid-ops { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1.5rem 0; }
+        .op-card { background: white; border-radius: 1.2rem; padding: 1.5rem 1rem; text-align: center; cursor: pointer; border: 2px solid #e9ecef; transition: 0.2s; }
+        .op-card.selected { border-color: #0d8a41; background: #f0fff4; }
+        .op-logo { width: 60px; height: 60px; margin: 0 auto 10px; display: flex; justify-content: center; align-items: center; font-size: 24px; font-weight: 900; border-radius: 12px; position: relative; }
+        .op-name { font-weight: 800; font-size: 15px; color: #1e3c72; }
+        .selected-ring { position: absolute; top: -6px; right: -6px; width: 28px; height: 28px; background: #0d8a41; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 0.8rem; display: none; }
+        .op-card.selected .selected-ring { display: flex; }
+
+        /* ADEEGYADA */
+        .grid-cats { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1.5rem 0; }
+        .cat-card { background: #00a651; border-radius: 1.2rem; cursor: pointer; text-align: center; border: none; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem 1rem 1.5rem; transition: 0.2s; position: relative; border: 2px solid transparent; }
+        .cat-card.selected { border-color: #1e3c72; transform: scale(0.98); }
+        .cat-img { color: white; font-size: 40px; margin-bottom: 10px; }
+        .cat-name { font-weight: 700; color: white; font-size: 15px; }
+        .cat-selected-ring { position: absolute; top: 10px; right: 10px; width: 24px; height: 24px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #00a651; font-size: 0.7rem; display: none; }
+        .cat-card.selected .cat-selected-ring { display: flex; }
+
+        /* QORSHAYAASHA & BIXINTA */
+        .custom-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin: 1.5rem 0; }
+        .circle-card { background: white; border-radius: 1.5rem; aspect-ratio: 1 / 1; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; border: 2px solid #e9ecef; transition: 0.2s; text-align: center; padding: 0.8rem; position: relative; box-shadow: 0 4px 10px rgba(0,0,0,0.02); }
+        .circle-card.selected { border-color: #2e7d32; background: #f0fff4; }
+        .circle-card img { width: 60px; height: 60px; border-radius: 50%; object-fit: cover; margin-bottom: 0.5rem; }
+        .circle-card .icon { font-size: 2rem; margin-bottom: 0.3rem; }
+        .circle-card .title { font-weight: 700; font-size: 0.85rem; color: #1e3c72; }
+        .circle-card .price { font-size: 1rem; font-weight: bold; margin-top: 0.3rem; color: #f59e0b; }
+        .circle-card .old-price { font-size: 0.7rem; text-decoration: line-through; color: #6c757d; }
+        .circle-selected-ring { position: absolute; top: -6px; right: -6px; width: 28px; height: 28px; background: #2e7d32; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 0.8rem; display: none; }
+        .circle-card.selected .circle-selected-ring { display: flex; }
+        .feature-badge { font-size: 0.65rem; background: #e9ecef; border-radius: 1rem; padding: 0.2rem 0.6rem; margin-top: 0.3rem; color: #1e3c72; font-weight: 500; }
         
-        /* Live feed */
-        .live-feed {
-            background: white;
-            border-radius: 1.5rem;
-            padding: 1rem;
-            margin-top: 1rem;
-            max-height: 300px;
-            overflow-y: auto;
-        }
-        .feed-item { padding: 0.5rem; border-bottom: 1px solid #e2e8f0; font-size: 0.85rem; display: flex; align-items: center; gap: 0.5rem; }
-        .feed-item i { color: #f59e0b; width: 1.5rem; }
+        .input-group { margin-bottom: 1.2rem; }
+        .input-group label { display: block; font-weight: 600; margin-bottom: 0.3rem; color: #1e3c72; font-size: 0.85rem; }
+        .input-group input { width: 100%; padding: 0.9rem; border: 2px solid #e9ecef; border-radius: 1.5rem; font-size: 1rem; background: white; }
+        .btn { padding: 0.9rem 1.5rem; border-radius: 3rem; font-size: 1rem; font-weight: bold; border: none; cursor: pointer; transition: 0.2s; }
+        .btn-primary { background: linear-gradient(135deg, #f59e0b, #e67e22); color: white; width: 100%; }
+        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-back { background: #e9ecef; color: #1e3c72; flex: 1; width: 100%; margin-bottom: 0.5rem; }
+        .nav-buttons { margin-top: 1.5rem; display: flex; flex-direction: column; }
+        .total-box { background: #f8f9fa; padding: 1rem; border-radius: 1.5rem; text-align: center; font-weight: bold; margin: 1rem 0; color: #1e3c72; }
+        .success-message { background: #d4edda; color: #155724; padding: 1rem; border-radius: 1.5rem; text-align: center; margin: 1rem 0; font-weight: bold; }
+        .error-msg { color: #e74c3c; font-size: 0.8rem; margin-top: 0.2rem; }
         
-        /* Footer */
-        .footer { margin-top: 2rem; background: #ffd966; border-radius: 1rem; padding: 1.5rem; color: #2c3e66; }
-        .footer-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; margin-bottom: 1rem; }
-        .footer-section h4 { font-size: 0.9rem; margin-bottom: 0.5rem; color: #2c3e66; font-weight: 600; }
-        .footer-section ul { list-style: none; padding: 0; }
-        .footer-section li { margin-bottom: 0.3rem; }
-        .footer-section a { font-size: 0.75rem; color: #2c3e66; text-decoration: none; }
-        .footer-contact p { font-size: 0.75rem; margin-bottom: 0.3rem; display: flex; align-items: center; gap: 0.4rem; }
-        .footer-bottom { text-align: center; padding-top: 1rem; font-size: 0.7rem; border-top: 1px solid rgba(44,62,102,0.2); margin-top: 1rem; }
+        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: white; display: flex; justify-content: space-around; padding: 10px 0 20px; border-top: 1px solid #eef2f6; backdrop-filter: blur(10px); background: rgba(255,255,255,0.95); z-index: 1000; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; color: #64748b; font-size: 0.8rem; text-decoration: none; cursor: pointer; }
+        .nav-item.active { color: #2e7d32; font-weight: 600; }
+        .nav-item i { font-size: 1.2rem; margin-bottom: 0.2rem; }
+        .menu-panel { position: fixed; bottom: 4.5rem; left: 0; right: 0; background: rgba(30, 30, 40, 0.95); backdrop-filter: blur(20px); border-radius: 1.5rem 1.5rem 0 0; padding: 1rem; display: none; flex-direction: column; gap: 0.5rem; z-index: 999; max-height: 60vh; overflow-y: auto; }
+        .menu-panel.show { display: flex; }
+        .menu-section h4 { color: #ffd966; font-size: 0.8rem; margin-bottom: 0.3rem; border-left: 3px solid #f59e0b; padding-left: 0.5rem; }
+        .menu-link { display: block; color: white; text-decoration: none; padding: 0.5rem 0.8rem; font-size: 0.85rem; border-radius: 1rem; transition: 0.2s; }
+        .menu-link:hover { background: rgba(255,255,255,0.1); }
+        .close-menu { text-align: right; padding: 0.2rem; color: #ffd966; font-size: 0.7rem; cursor: pointer; }
         
-        @media (max-width: 1000px) {
-            .leaderboard-grid { grid-template-columns: 1fr; }
-            .stats-grid { grid-template-columns: repeat(2, 1fr); }
-            .footer-grid { grid-template-columns: 1fr; }
-            .filter-bar { flex-direction: column; align-items: stretch; }
+        @media (max-width: 640px) { 
+            .custom-grid { grid-template-columns: repeat(2, 1fr); } 
+            .step-indicator { gap: 0.5rem; } 
+            .step-circle::after { font-size: 0.55rem; } 
         }
     </style>
 </head>
 <body>
 <div class="container">
     <div class="title-section">
-        <h1><span class="trophy">⭐</span> SAHAN DATA <span class="trophy">⭐</span></h1>
-        <h2>Ku Soo Biir Xidigaha Suuq-geynta</h2>
+        <h1><i class="fas fa-satellite-dish"></i> SAHAN DATA <i class="fas fa-star"></i></h1>
+        <p>5 tallaabo · iibso khad & ku hadal</p>
     </div>
-    
-    <!-- Stats -->
-    <div class="stats-grid" id="statsGrid">
-        <div class="stat-card"><h3>Total Users</h3><div class="value" id="totalUsers">0</div></div>
-        <div class="stat-card"><h3>Total Orders</h3><div class="value" id="totalOrders">0</div></div>
-        <div class="stat-card"><h3>Total Transactions</h3><div class="value" id="totalTransactions">0</div></div>
-        <div class="stat-card"><h3>Total Referrals</h3><div class="value" id="totalReferrals">0</div></div>
-        <div class="stat-card"><h3>Total Districts</h3><div class="value" id="totalDistricts">0</div></div>
-        <div class="stat-card"><h3>Total Groups</h3><div class="value" id="totalGroups">0</div></div>
-        <div class="stat-card"><h3>Total Schools</h3><div class="value" id="totalSchools">0</div></div>
-        <div class="stat-card"><h3>Total Bonus Points</h3><div class="value" id="totalBonusPoints">0</div></div>
+
+    <div class="nav-tabs">
+        <a href="index.html">Home</a>
+        <a href="leaderboard.html">Leaderboard</a>
     </div>
-    
-    <!-- Filters -->
-    <div class="filter-bar">
-        <div class="filter-group"><label>Category:</label>
-            <select id="categorySelect">
-                <option value="referrals">📢 Top Referrals</option>
-                <option value="sellers">🛒 Top Sellers</option>
-                <option value="promoted">⭐ Top Promoted</option>
-                <option value="districts">🏙️ Top Districts</option>
-                <option value="groups">👥 Top Groups</option>
-                <option value="schools">🏫 Top Schools</option>
-            </select>
+
+    <div class="card">
+        <div class="step-indicator">
+            <div class="step-circle active" data-step="1" data-label="Shirkad">1</div>
+            <div class="step-circle" data-step="2" data-label="Adeeg">2</div>
+            <div class="step-circle" data-step="3" data-label="Qorshe">3</div>
+            <div class="step-circle" data-step="4" data-label="Bixin">4</div>
+            <div class="step-circle" data-step="5" data-label="Xaqiiji">5</div>
         </div>
-        <div class="filter-group"><label>Time:</label>
-            <select id="timeSelect">
-                <option value="week">This Week</option>
-                <option value="month">This Month</option>
-                <option value="year">This Year</option>
-                <option value="all">All Time</option>
-            </select>
+
+        <!-- STEP 1: SHIRKADAHA (Auto-advance) -->
+        <div id="step1" class="step-content">
+            <div class="grid-ops" id="companyGrid"></div>
         </div>
-        <div class="filter-group"><label>Location:</label>
-            <select id="locationSelect"><option value="all">All Locations</option></select>
+
+        <!-- STEP 2: ADEEGYADA (Auto-advance) -->
+        <div id="step2" class="step-content" style="display:none;">
+            <div class="grid-cats" id="serviceGrid"></div>
+            <div class="nav-buttons"><button class="btn btn-back" id="backStep2">← Dib</button></div>
         </div>
-        <div class="filter-group">
-            <input type="text" id="searchInput" class="search-input" placeholder="Search user...">
+
+        <!-- STEP 3: QORSHAYAASHA (Auto-advance) -->
+        <div id="step3" class="step-content" style="display:none;">
+            <div class="custom-grid" id="planGrid"></div>
+            <div class="nav-buttons"><button class="btn btn-back" id="backStep3">← Dib</button></div>
         </div>
-        <button id="refreshBtn"><i class="fas fa-sync-alt"></i> Refresh</button>
+
+        <!-- STEP 4: BIXINTA (Auto-advance) -->
+        <div id="step4" class="step-content" style="display:none;">
+            <div class="custom-grid" id="paymentMethodsGrid"></div>
+            <div class="nav-buttons"><button class="btn btn-back" id="backStep4">← Dib</button></div>
+        </div>
+
+        <!-- STEP 5: XAQIIJINTA -->
+        <div id="step5" class="step-content" style="display:none;">
+            <div id="orderSummary" class="total-box"></div>
+            <div class="input-group">
+                <label><i class="fas fa-phone"></i> Lambarkaaga (diraya) *</label>
+                <input type="tel" id="customerPhone" placeholder="61xxxxxxx">
+                <div id="phoneError" class="error-msg"></div>
+            </div>
+            <div class="input-group">
+                <label><i class="fas fa-gift"></i> Lambarka helaya (ikhtiyaar)</label>
+                <input type="tel" id="receiverPhone" placeholder="Haddii hadiyad tahay">
+            </div>
+            <div class="input-group">
+                <label><i class="fas fa-tag"></i> Promo Code (4-gidit numeric, ikhtiyaar)</label>
+                <input type="text" id="promoCode" maxlength="4" placeholder="Tusaale: 1024">
+                <div id="promoError" class="error-msg"></div>
+            </div>
+            <div class="nav-buttons">
+                <button class="btn btn-back" id="backStep5">← Dib</button>
+                <button class="btn btn-primary" id="confirmOrderBtn" style="margin-top:0.5rem;">Xaqiiji & Iibso</button>
+            </div>
+        </div>
+
+        <div id="resultMessage" style="display:none;" class="success-message"></div>
     </div>
-    
-    <!-- Leaderboard Grid -->
-    <div class="leaderboard-grid" id="leaderboardGrid"></div>
-    
-    <!-- Live Feed -->
-    <div class="live-feed">
-        <h4 style="color:#f59e0b;"><i class="fas fa-bolt"></i> Live Feed</h4>
-        <div id="feedItems"><div class="loading">Connecting...</div></div>
+</div>
+
+<!-- Bottom Navigation -->
+<div class="bottom-nav">
+    <a href="index.html" class="nav-item active"><i class="fas fa-home"></i><span>Home</span></a>
+    <a href="leaderboard.html" class="nav-item"><i class="fas fa-trophy"></i><span>Leaderboard</span></a>
+    <div class="nav-item" id="accountBtn"><i class="fas fa-user-circle"></i><span>Account</span></div>
+    <div class="nav-item" id="moreBtn"><i class="fas fa-ellipsis-h"></i><span>More</span></div>
+</div>
+
+<div id="accountMenu" class="menu-panel">
+    <div class="close-menu" onclick="closeAllMenus()"><i class="fas fa-times"></i> Xidh</div>
+    <div class="menu-section"><h4><i class="fas fa-key"></i> Authentication</h4>
+        <a href="login.html" class="menu-link"><i class="fas fa-sign-in-alt"></i> Login</a>
+        <a href="register.html" class="menu-link"><i class="fas fa-user-plus"></i> Register</a>
     </div>
-    
-    <!-- Modal -->
-    <div id="userModal" class="modal"><div class="modal-content"><span class="close">&times;</span><h3 id="modalUserName"></h3><div id="modalRanks"></div></div></div>
-    
-    <!-- Footer -->
-    <div class="footer">
-        <div class="footer-grid">
-            <div class="footer-section"><h4>Account</h4><ul><li><a href="login.html">Login</a></li><li><a href="register.html">Register</a></li><li><a href="edit-profile.html">Edit Profile</a></li></ul></div>
-            <div class="footer-section"><h4>Info</h4><ul><li><a href="faq.html">FAQ</a></li><li><a href="terms.html">Terms</a></li><li><a href="privacy.html">Privacy</a></li><li><a href="admin.html">Admin</a></li></ul></div>
-            <div class="footer-section"><h4>Quick Links</h4><ul><li><a href="index.html">Home</a></li><li><a href="dashboard.html">Dashboard</a></li><li><a href="leaderboard.html">Leaderboard</a></li><li><a href="rewards.html">Rewards</a></li></ul></div>
-            <div class="footer-section"><h4>History & Contact</h4><ul><li><a href="order-history.html">Order History</a></li><li><a href="referrals.html">Referrals</a></li><li><a href="notifications.html">Notifications</a></li></ul><div class="footer-contact"><p><i class="fab fa-whatsapp"></i> +252 61 253 8844</p><p><i class="fas fa-phone"></i> +252 61 253 8844</p><p><i class="fas fa-envelope"></i> support@sahandata.com</p></div></div>
-        </div>
-        <div class="footer-bottom"><p>&copy; 2026 SAHAN DATA - All rights reserved.</p></div>
+    <div id="loggedInAccountSection" class="menu-section" style="display:none;">
+        <h4><i class="fas fa-user"></i> My Profile</h4>
+        <a href="dashboard.html" class="menu-link"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+        <a href="order-history.html" class="menu-link"><i class="fas fa-history"></i> My Orders</a>
+        <a href="referrals.html" class="menu-link"><i class="fas fa-users"></i> My Referrals</a>
+    </div>
+</div>
+
+<div id="moreMenu" class="menu-panel">
+    <div class="close-menu" onclick="closeAllMenus()"><i class="fas fa-times"></i> Xidh</div>
+    <div class="menu-section"><h4><i class="fas fa-info-circle"></i> Info</h4>
+        <a href="privacy.html" class="menu-link">Privacy</a>
+        <a href="terms.html" class="menu-link">Terms</a>
+        <a href="faq.html" class="menu-link">FAQ</a>
+    </div>
+    <div id="adminSection" class="menu-section" style="display:none;">
+        <h4><i class="fas fa-crown"></i> Admin</h4>
+        <a href="admin.html" class="menu-link"><i class="fas fa-lock"></i> Admin Panel</a>
     </div>
 </div>
 
 <script>
-    const SUPABASE_URL = 'https://xccbmivhcbukqyplstae.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhjY2JtaXZoY2J1a3F5cGxzdGFlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEzNTcyNTIsImV4cCI6MjA4NjkzMzI1Mn0.lGr3cDItP1-LVJgzd5wW5gp0HsGUonuZj-T9qGL2nF0';
-    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    
-    // Helper: escape HTML
-    function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[m])); }
-    
-    // Load stats
-    async function loadStats() {
-        document.getElementById('totalUsers').innerText = await sb.rpc('get_total_users').then(r => r.data || 0);
-        document.getElementById('totalOrders').innerText = await sb.rpc('get_total_orders').then(r => r.data || 0);
-        document.getElementById('totalTransactions').innerText = await sb.rpc('get_total_transactions').then(r => r.data || 0);
-        document.getElementById('totalReferrals').innerText = await sb.rpc('get_total_referrals_sum').then(r => r.data || 0);
-        const { data: districts } = await sb.from('customers').select('district');
-        document.getElementById('totalDistricts').innerText = new Set(districts?.map(d=>d.district).filter(Boolean)).size;
-        const { data: groups } = await sb.from('customers').select('group_code');
-        document.getElementById('totalGroups').innerText = new Set(groups?.map(g=>g.group_code).filter(Boolean)).size;
-        const { data: schools } = await sb.from('customers').select('school');
-        document.getElementById('totalSchools').innerText = new Set(schools?.map(s=>s.school).filter(Boolean)).size;
-        const { data: bonus } = await sb.from('customers').select('bonus_points');
-        document.getElementById('totalBonusPoints').innerText = bonus?.reduce((a,b)=>a+(b.bonus_points||0),0) || 0;
-    }
-    
-    // Data fetching functions
-    async function fetchReferrals(time) {
-        if (time === 'week') { const { data } = await sb.rpc('get_weekly_top_referrers'); return data || []; }
-        const { data } = await sb.from('customers').select('id, full_name, total_referrals').gt('total_referrals',0).order('total_referrals',{ascending:false}).limit(20);
-        return data.map(d=>({ customer_id:d.id, full_name:d.full_name, referral_count:d.total_referrals }));
-    }
-    async function fetchSellers(time) {
-        if (time === 'month') { const now = new Date(); const { data } = await sb.rpc('get_monthly_top_seller',{p_year:now.getFullYear(),p_month:now.getMonth()+1}); return data?[{ customer_id:data.customer_id, full_name:data.full_name, order_count:data.order_count }]:[]; }
-        const { data } = await sb.rpc('get_top_sellers'); return data || [];
-    }
-    async function fetchPromoted(time) {
-        if (time === 'month') { const now = new Date(); const { data } = await sb.rpc('get_monthly_promo_winner',{p_year:now.getFullYear(),p_month:now.getMonth()+1}); return data?[{ customer_id:data.customer_id, full_name:data.full_name, usage_count:data.usage_count }]:[]; }
-        const { data } = await sb.rpc('get_top_promoted'); return data || [];
-    }
-    async function fetchDistricts() { const { data } = await sb.rpc('get_top_districts'); return data || []; }
-    async function fetchGroups() { const { data } = await sb.rpc('get_top_groups'); return data || []; }
-    async function fetchSchools() { const { data } = await sb.rpc('get_top_schools'); return data || []; }
-    
-    async function loadLeaderboard() {
-        const category = document.getElementById('categorySelect').value;
-        const time = document.getElementById('timeSelect').value;
-        const search = document.getElementById('searchInput').value.toLowerCase();
-        const location = document.getElementById('locationSelect').value;
-        let items = [];
-        if (category === 'referrals') items = await fetchReferrals(time);
-        else if (category === 'sellers') items = await fetchSellers(time);
-        else if (category === 'promoted') items = await fetchPromoted(time);
-        else if (category === 'districts') items = await fetchDistricts();
-        else if (category === 'groups') items = await fetchGroups();
-        else if (category === 'schools') items = await fetchSchools();
+    (function(){
+        const SUPABASE_URL = 'https://xccbmivhcbukqyplstae.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhjY2JtaXZoY2J1a3F5cGxzdGFlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzEzNTcyNTIsImV4cCI6MjA4NjkzMzI1Mn0.lGr3cDItP1-LVJgzd5wW5gp0HsGUonuZj-T9qGL2nF0';
+        const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        let currentStep = 1;
+        let selectedCompany = null, selectedService = null, selectedPlan = null, selectedPayment = null;
+        let currentUser = null;
+        let companies = [], paymentMethods = [];
+
+        const stepContents = [document.getElementById('step1'), document.getElementById('step2'), document.getElementById('step3'), document.getElementById('step4'), document.getElementById('step5')];
+        const stepCircles = document.querySelectorAll('.step-circle');
+        const companyGrid = document.getElementById('companyGrid');
+        const serviceGrid = document.getElementById('serviceGrid');
+        const planGrid = document.getElementById('planGrid');
+        const paymentGrid = document.getElementById('paymentMethodsGrid');
         
-        if (search) items = items.filter(i => i.full_name?.toLowerCase().includes(search) || i.district_name?.toLowerCase().includes(search) || i.group_code?.toLowerCase().includes(search) || i.school_name?.toLowerCase().includes(search));
-        if (location !== 'all' && category === 'districts') items = items.filter(i => i.district_name === location);
+        // Badhamada "Dib" oo keliya ayaa hadda jira
+        const back2 = document.getElementById('backStep2');
+        const back3 = document.getElementById('backStep3');
+        const back4 = document.getElementById('backStep4');
+        const back5 = document.getElementById('backStep5');
         
-        const grid = document.getElementById('leaderboardGrid');
-        if (!items.length) { grid.innerHTML = '<div class="loading">No data</div>'; return; }
-        
-        let nameKey, valueKey, userIdKey = 'customer_id';
-        if (category === 'referrals') { nameKey = 'full_name'; valueKey = 'referral_count'; }
-        else if (category === 'sellers') { nameKey = 'full_name'; valueKey = 'order_count'; }
-        else if (category === 'promoted') { nameKey = 'full_name'; valueKey = 'usage_count'; }
-        else if (category === 'districts') { nameKey = 'district_name'; valueKey = 'order_count'; userIdKey = null; }
-        else if (category === 'groups') { nameKey = 'group_code'; valueKey = 'order_count'; userIdKey = null; }
-        else { nameKey = 'school_name'; valueKey = 'order_count'; userIdKey = null; }
-        
-        grid.innerHTML = `<div class="leader-card"><div class="card-header"><h3><i class="fas fa-chart-line"></i> ${category.toUpperCase()}</h3></div><div class="card-body" id="dynamicList"></div></div>`;
-        const container = document.getElementById('dynamicList');
-        container.innerHTML = items.slice(0,10).map((item, idx) => {
-            let medal = idx===0?'🥇':idx===1?'🥈':idx===2?'🥉':`${idx+1}.`;
-            const name = item[nameKey] || 'N/A';
-            const value = item[valueKey] || 0;
-            const userId = item[userIdKey] || null;
-            const clickAttr = (userId && category!=='districts' && category!=='groups' && category!=='schools') ? ` onclick="showUserDetails('${userId}')"` : '';
-            return `<div class="rank-item"${clickAttr}><div class="rank-name">${medal} ${escapeHtml(name)}</div><div class="rank-value">${value}</div></div>`;
-        }).join('');
-    }
-    
-    // Modal functions
-    window.showUserDetails = async (userId) => {
-        const modal = document.getElementById('userModal');
-        const modalName = document.getElementById('modalUserName');
-        const modalRanks = document.getElementById('modalRanks');
-        const { data: user } = await sb.from('customers').select('full_name, district, group_code, school').eq('id', userId).single();
-        modalName.innerText = user?.full_name || 'User';
-        modalRanks.innerHTML = '<div class="loading">Loading ranks...</div>';
-        modal.style.display = 'flex';
-        try {
-            const { data: refList } = await sb.from('customers').select('id, total_referrals').gt('total_referrals',0).order('total_referrals',{ascending:false});
-            const refRank = refList.findIndex(r=>r.id===userId)+1;
-            const { data: sellerList } = await sb.rpc('get_top_sellers');
-            const sellerRank = sellerList.findIndex(s=>s.customer_id===userId)+1;
-            const { data: promoList } = await sb.rpc('get_top_promoted');
-            const promoRank = promoList.findIndex(p=>p.customer_id===userId)+1;
-            modalRanks.innerHTML = `
-                <div class="rank-stat"><strong>🏆 Referral Rank:</strong> #${refRank>0?refRank:'>20'}</div>
-                <div class="rank-stat"><strong>🛒 Seller Rank:</strong> #${sellerRank>0?sellerRank:'>10'}</div>
-                <div class="rank-stat"><strong>⭐ Promoted Rank:</strong> #${promoRank>0?promoRank:'>10'}</div>
-                <div class="rank-stat"><strong>🏙️ District:</strong> ${user?.district||'N/A'}</div>
-                <div class="rank-stat"><strong>👥 Group:</strong> ${user?.group_code||'N/A'}</div>
-                <div class="rank-stat"><strong>🏫 School:</strong> ${user?.school||'N/A'}</div>
-            `;
-        } catch(e) { modalRanks.innerHTML = '<div class="loading">Error</div>'; }
-    };
-    document.querySelector('.close').addEventListener('click',()=>document.getElementById('userModal').style.display='none');
-    window.onclick = (e)=>{ if(e.target===document.getElementById('userModal')) document.getElementById('userModal').style.display='none'; };
-    
-    // Live feed
-    let feedChannel;
-    function setupLiveFeed() {
-        const feedDiv = document.getElementById('feedItems');
-        feedDiv.innerHTML = '<div class="loading">Connecting...</div>';
-        feedChannel = sb.channel('home-feed')
-            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'orders' }, (payload) => {
-                const newOrder = payload.new;
-                const feedItem = document.createElement('div');
-                feedItem.className = 'feed-item';
-                feedItem.innerHTML = `<i class="fas fa-shopping-cart"></i> New order: ${newOrder.order_number} ($${newOrder.amount})`;
-                feedDiv.prepend(feedItem);
-                if (feedDiv.children.length > 10) feedDiv.removeChild(feedDiv.lastChild);
-                loadStats(); loadLeaderboard();
-            })
-            .subscribe();
-        sb.from('orders').select('order_number, amount').order('created_at',{ascending:false}).limit(5).then(({data})=>{
-            if(data?.length){ feedDiv.innerHTML=''; data.forEach(o=>{ let d=document.createElement('div'); d.className='feed-item'; d.innerHTML=`<i class="fas fa-shopping-cart"></i> Order: ${o.order_number} ($${o.amount})`; feedDiv.appendChild(d); });}
-            else feedDiv.innerHTML='<div class="loading">No recent orders</div>';
-        });
-    }
-    
-    // Initialize
-    document.getElementById('refreshBtn').addEventListener('click', ()=>{ loadLeaderboard(); loadStats(); });
-    document.getElementById('categorySelect').addEventListener('change', loadLeaderboard);
-    document.getElementById('timeSelect').addEventListener('change', loadLeaderboard);
-    document.getElementById('searchInput').addEventListener('input', loadLeaderboard);
-    
-    loadStats();
-    loadLeaderboard();
-    setupLiveFeed();
+        const confirmBtn = document.getElementById('confirmOrderBtn');
+        const resultDiv = document.getElementById('resultMessage');
+
+        async function fetchCompanies() { const { data } = await sb.from('companies').select('*').order('name'); companies = data || []; }
+        async function fetchServices(companyId) { const { data } = await sb.from('services').select('*').eq('company_id', companyId); return data || []; }
+        async function fetchPlans(serviceId) { const { data } = await sb.from('plans').select('*').eq('service_id', serviceId); return data || []; }
+        async function fetchPaymentMethods() { const { data } = await sb.from('payment_methods').select('*').eq('is_active', true); paymentMethods = data || []; }
+
+        // --- RENDER SHIRKADAHA ---
+        function renderCompanies() {
+            companyGrid.innerHTML = '';
+            companies.forEach(c => {
+                const card = document.createElement('div');
+                card.className = 'op-card' + (selectedCompany?.id === c.id ? ' selected' : '');
+                
+                let logoHtml = c.logo_url 
+                    ? `<img src="${c.logo_url}" style="width:100%; height:100%; object-fit:contain;">` 
+                    : c.letter || c.name.charAt(0);
+                
+                card.innerHTML = `
+                    <div class="op-logo" style="background:${c.color || '#e8f5e9'}; color:${c.color ? 'white' : '#0d8a41'}; border: 3px solid ${c.color || '#0d8a41'};">
+                        ${logoHtml}
+                        <div class="selected-ring"><i class="fas fa-check"></i></div>
+                    </div>
+                    <div class="op-name">${c.name}</div>
+                `;
+                // AUTO-ADVANCE: Marka la gujiyo isla markiiba wuu gudbayaa
+                card.onclick = () => { selectedCompany = c; selectedService = null; selectedPlan = null; renderCompanies(); showStep(2); };
+                companyGrid.appendChild(card);
+            });
+        }
+
+        // --- RENDER ADEEGYADA ---
+        async function renderServices() {
+            if (!selectedCompany) return;
+            const services = await fetchServices(selectedCompany.id);
+            serviceGrid.innerHTML = '';
+            services.forEach(s => {
+                const card = document.createElement('div');
+                card.className = 'cat-card' + (selectedService?.id === s.id ? ' selected' : '');
+                
+                card.innerHTML = `
+                    <div class="cat-img">${s.icon || '<i class="fa-solid fa-mobile-screen"></i>'}</div>
+                    <div class="cat-name">${s.name}</div>
+                    <div class="cat-selected-ring"><i class="fas fa-check"></i></div>
+                `;
+                // AUTO-ADVANCE
+                card.onclick = () => { selectedService = s; selectedPlan = null; renderServices(); showStep(3); };
+                serviceGrid.appendChild(card);
+            });
+        }
+
+        // --- RENDER QORSHAYAASHA ---
+        async function renderPlans() {
+            if (!selectedService) return;
+            const plans = await fetchPlans(selectedService.id);
+            planGrid.innerHTML = '';
+            plans.forEach(p => {
+                const card = document.createElement('div');
+                card.className = 'circle-card' + (selectedPlan?.id === p.id ? ' selected' : '');
+                let details = [];
+                if (p.period) details.push(p.period);
+                if (p.minutes) details.push(`${p.minutes} min`);
+                if (p.data_amount) details.push(p.data_amount);
+                
+                card.innerHTML = `
+                    ${p.image_url ? `<img src="${p.image_url}">` : `<div class="icon">${p.icon || '🕛'}</div>`}
+                    <div class="title">${p.name}</div>
+                    <div class="price">$${p.price}</div>
+                    ${p.old_price ? `<div class="old-price">$${p.old_price}</div>` : ''}
+                    <div class="feature-badge">${details.join(' · ')}</div>
+                    <div class="circle-selected-ring"><i class="fas fa-check"></i></div>
+                `;
+                // AUTO-ADVANCE
+                card.onclick = () => { selectedPlan = p; renderPlans(); showStep(4); };
+                planGrid.appendChild(card);
+            });
+        }
+
+        // --- RENDER BIXINTA ---
+        function renderPayments() {
+            paymentGrid.innerHTML = '';
+            paymentMethods.forEach(pm => {
+                const card = document.createElement('div');
+                card.className = 'circle-card' + (selectedPayment?.id === pm.id ? ' selected' : '');
+                card.innerHTML = `
+                    ${pm.logo_url ? `<img src="${pm.logo_url}">` : `<div class="icon">💳</div>`}
+                    <div class="title">${pm.name}</div>
+                    <div class="circle-selected-ring"><i class="fas fa-check"></i></div>
+                `;
+                // AUTO-ADVANCE
+                card.onclick = () => { selectedPayment = pm; renderPayments(); showStep(5); };
+                paymentGrid.appendChild(card);
+            });
+        }
+
+        function updateOrderSummary() {
+            const summary = document.getElementById('orderSummary');
+            if (selectedPlan && selectedCompany) {
+                summary.innerHTML = `<strong>${selectedPlan.name}</strong><br>Shirkad: ${selectedCompany.name}<br>Qiimaha: $${selectedPlan.price} · ${selectedPlan.period || ''}`;
+            } else summary.innerHTML = 'Marka hore dooro qorshe.';
+        }
+
+        function showStep(step) {
+            stepContents.forEach((el, idx) => { if (el) el.style.display = (idx+1 === step) ? 'block' : 'none'; });
+            stepCircles.forEach((el, idx) => { el.classList.toggle('active', idx+1 === step); });
+            currentStep = step;
+            if (step === 2) renderServices();
+            if (step === 3) renderPlans();
+            if (step === 4) renderPayments();
+            if (step === 5) updateOrderSummary();
+        }
+
+        // Badhamada Dib
+        back2.onclick = () => showStep(1);
+        back3.onclick = () => showStep(2);
+        back4.onclick = () => showStep(3);
+        back5.onclick = () => showStep(4);
+
+        async function submitOrder() {
+            const customerPhone = document.getElementById('customerPhone').value.trim();
+            const receiver = document.getElementById('receiverPhone').value.trim() || null;
+            const promo = document.getElementById('promoCode').value.trim() || null;
+            
+            const phoneRegex = /^6[12389]\d{7}$/;
+            if (!phoneRegex.test(customerPhone)) {
+                document.getElementById('phoneError').innerText = 'Lambar khaldan (10 lambar, bilow 61/62/63/68/69)';
+                return;
+            }
+            document.getElementById('phoneError').innerText = '';
+            
+            // Validation-ka Promo Code-ka (Siyaasadda Cusub: 4-gidit numeric)
+            if (promo) {
+                const promoRegex = /^\d{4}$/;
+                if (!promoRegex.test(promo)) {
+                    document.getElementById('promoError').innerText = 'Promo code waa inuu ahaadaa 4-gidit tiro (tusaale: 1024)';
+                    return;
+                }
+            }
+            document.getElementById('promoError').innerText = '';
+
+            confirmBtn.disabled = true;
+            confirmBtn.textContent = 'Processing...';
+            
+            try {
+                const { data, error } = await sb.rpc('create_order', {
+                    p_customer_phone: customerPhone,
+                    p_product_id: selectedPlan.id,
+                    p_promo_code: promo,
+                    p_payment_method_id: selectedPayment.id,
+                    p_receiver_phone: receiver
+                });
+                
+                if (error) throw error;
+
+                const correctUssd = data.ussd_code;
+                resultDiv.innerHTML = `✅ Dalabkaagii wuu guulaystay, waana la keediyey. Fadlan dir lacagta<br>📞 USSD: ${correctUssd}`;
+                resultDiv.style.display = 'block';
+
+                setTimeout(() => {
+                    const telLink = `tel:${correctUssd.replace(/\*/g, '%2A').replace(/#/g, '%23')}`;
+                    window.location.href = telLink;
+                    
+                    setTimeout(() => {
+                        selectedCompany = selectedService = selectedPlan = selectedPayment = null;
+                        showStep(1);
+                        renderCompanies();
+                        resultDiv.style.display = 'none';
+                        confirmBtn.disabled = false;
+                        confirmBtn.textContent = 'Xaqiiji & Iibso';
+                        document.getElementById('customerPhone').value = '';
+                        document.getElementById('receiverPhone').value = '';
+                        document.getElementById('promoCode').value = '';
+                    }, 2000);
+                }, 3000);
+                
+            } catch (err) {
+                alert('Qalad: ' + err.message);
+                confirmBtn.disabled = false;
+                confirmBtn.textContent = 'Xaqiiji & Iibso';
+            }
+        }
+        confirmBtn.onclick = submitOrder;
+
+        async function checkAuth() {
+            const { data: { user } } = await sb.auth.getUser();
+            currentUser = user;
+            if (user) {
+                document.getElementById('loggedInAccountSection').style.display = 'block';
+                const { data: cust } = await sb.from('customers').select('is_admin').eq('uid', user.id).maybeSingle();
+                if (cust?.is_admin) document.getElementById('adminSection').style.display = 'block';
+            }
+        }
+
+        function closeAllMenus() {
+            document.getElementById('accountMenu').classList.remove('show');
+            document.getElementById('moreMenu').classList.remove('show');
+        }
+        document.getElementById('accountBtn').onclick = (e) => { e.stopPropagation(); closeAllMenus(); document.getElementById('accountMenu').classList.toggle('show'); };
+        document.getElementById('moreBtn').onclick = (e) => { e.stopPropagation(); closeAllMenus(); document.getElementById('moreMenu').classList.toggle('show'); };
+        document.addEventListener('click', (e) => { if (!e.target.closest('.bottom-nav') && !e.target.closest('.menu-panel')) closeAllMenus(); });
+        window.closeAllMenus = closeAllMenus;
+
+        (async function init() {
+            await checkAuth();
+            await fetchCompanies();
+            await fetchPaymentMethods();
+            renderCompanies();
+            showStep(1);
+        })();
+    })();
 </script>
 </body>
 </html>
